@@ -105,6 +105,10 @@ dist
 dist/
 build/
 
+# Executáveis grandes (>100MB para GitHub)
+executavel/
+*.exe
+
 # IDE files
 .vscode/
 .idea/

@@ -6,7 +6,7 @@
 
 **Simulador e Visualizador Interativo de Diagrama Unifilar para Banco de Capacitores Trifásico**
 
-[![Version](https://img.shields.io/badge/version-24.07.2025-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-2025.01.28-blue.svg)](package.json)
 [![License](https://img.shields.io/badge/license-ISC-green.svg)](LICENSE)
 [![Electron](https://img.shields.io/badge/electron-29.1.5-brightgreen.svg)](https://electronjs.org/)
 [![JavaScript](https://img.shields.io/badge/javascript-ES6+-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -112,7 +112,7 @@ CapBankSimulator/
 ├── assets/                 # Recursos visuais
 │   └── logo.png            # Logo da aplicação
 ├── main.js                 # Processo principal do Electron
-├── index.html              # Interface principal (Diagrama Unifilar V2.8)
+├── index.html              # Interface principal (Diagrama Unifilar 2025.01.28)
 ├── script.js               # Lógica de simulação e propagação BFS
 ├── style.css               # Estilos visuais e animações
 ├── bank-selector.js        # Seletor de bancos de capacitores
@@ -268,9 +268,9 @@ console.log(circuito.graph);
 ## 🔄 Atualizações e Versionamento
 
 ### Histórico de Versões
-- **v24.07.2025**: Versão atual com sistema trifásico completo
-- **v24.06.2025**: Implementação do sistema de propagação BFS
-- **v24.05.2025**: Interface inicial e componentes básicos
+- **2025.01.28**: Versão atual com sistema trifásico completo
+- **2024.12.15**: Implementação do sistema de propagação BFS
+- **2024.11.10**: Interface inicial e componentes básicos
 
 ### Roadmap Futuro
 - [ ] **Sistema de Relatórios**: Exportação de configurações em PDF

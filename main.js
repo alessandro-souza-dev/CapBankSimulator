@@ -1,5 +1,5 @@
 // main.js
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, dialog } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -10,16 +10,32 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // Opcional, mas boa prática
       nodeIntegration: true, // Necessário se seus scripts JS usarem 'require'
-      contextIsolation: false
+      contextIsolation: false,
+      devTools: false // DESABILITA as ferramentas de desenvolvedor
     },
-    icon: path.join(__dirname, 'app/assets/logo.png') // Adiciona o ícone
+    icon: path.join(__dirname, 'assets/logo.png') // Adiciona o ícone
   });
 
-  // Carrega o index.html da sua aplicação.
-  mainWindow.loadFile('app/index.html');
+  // Remove o menu padrão que contém as opções de desenvolvedor
+  mainWindow.setMenuBarVisibility(false);
 
-  // Opcional: Abre as Ferramentas de Desenvolvedor.
-  // mainWindow.webContents.openDevTools();
+  // Carrega o index.html da sua aplicação.
+  mainWindow.loadFile('index.html');
+
+  // BLOQUEIA tentativas de abrir DevTools via atalhos
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    // Bloqueia F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    if (input.key === 'F12' ||
+        (input.control && input.shift && (input.key === 'I' || input.key === 'J')) ||
+        (input.control && input.key === 'U')) {
+      event.preventDefault();
+    }
+  });
+
+  // BLOQUEIA menu de contexto (botão direito)
+  mainWindow.webContents.on('context-menu', (event) => {
+    event.preventDefault();
+  });
 }
 
 app.whenReady().then(() => {
