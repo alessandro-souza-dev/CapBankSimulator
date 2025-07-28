@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Diagrama Unifilar Interativo - V2.8</title>
+   <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+   <!-- PAINEL SUPERIOR: Display de Potência e Logo -->
+   <div id="logo-container">
+      <img src="assets/logo.png" alt="Logo" id="logo-image">
+   </div>
+
+   <!-- BOTÃO DE TOGGLE DO PAINEL -->
+   <button id="toggle-panel-button" class="minimize-button">▶</button>
+
+   <!-- PAINEL DE CONFIGURAÇÕES LATERAL ESQUERDO -->
+   <div id="config-panel" class="minimized">
+
+      <!-- COLUNA 1: Configurações Gerais -->
+      <div class="panel-column">
+         <h3>Configurações Gerais</h3>
+         <div class="config-row">
+            <label for="circuit-type">Tipo de Circuito</label>
+            <select id="circuit-type">
+               <option value="monofasico">Monofásico</option>
+               <option value="trifasico" selected>Trifásico</option>
+            </select>
+         </div>
+         <div class="config-row">
+            <label for="bank-voltage">Tensão Nominal do Banco (kV)</label>
+            <select id="bank-voltage">
+               <option value="13.8">13.8</option>
+               <option value="23.9">23.9</option>
+               <option value="27.6">27.6</option>
+               <option value="41.4">41.4</option>
+               <option value="47.8">47.8</option>
+               <option value="55.2">55.2</option>
+               <option value="71.7">71.7</option>
+               <option value="95.6">95.6</option>
+            </select>
+         </div>
+      </div>
+
+      <!-- COLUNA 2: Cálculo de Potência -->
+      <div class="panel-column">
+         <h3>Cálculo de Potência</h3>
+         <div class="config-row">
+            <label for="test-power">Potência Reativa (MVAr)</label>
+            <input type="number" id="test-power" placeholder="Ex: 5.2" step="0.1">
+         </div>
+         <div class="config-row">
+            <label for="test-voltage">Tensão de Ensaio (kV) - Opcional</label>
+            <input type="number" id="test-voltage" placeholder="Ex: 13.8" step="0.1">
+         </div>
+         <div class="config-row">
+            <label for="effective-test-power">Potência Efetiva (MVAr)</label>
+            <input type="number" id="effective-test-power" readonly>
+         </div>
+         <button id="calculate-circuit" class="action-button">Calcular Configuração</button>
+      </div>
+
+      <!-- COLUNA 3: Resultados -->
+      <div class="panel-column">
+         <h3>Resultados</h3>
+         <div id="circuit-results">
+            <p style="color: #6c757d; font-style: italic;">Configure os parâmetros e clique em "Calcular Configuração" para ver as sugestões.</p>
+         </div>
+      </div>
+
+
+
+      <!-- COLUNA 5: Informações -->
+      <div class="panel-column">
+         <h3>Informações</h3>
+         <div class="config-row">
+            <label>Versão:</label>
+            <span style="font-size: 11px; color: #6c757d;">V2.8</span>
+         </div>
+
+      </div>
+   </div>
+
+   <!-- Título Dinâmico -->
+   <div id="dynamic-title">DIAGRAMA UNIFILAR - BANCO DE CAPACITORES</div>
+
+   <!-- Container do Diagrama com Zoom Controlado -->
+   <div id="diagram-container">
+
+      <!-- Barras Principais (Superior e Inferior) -->
+      <div class="bus" style="left: 20px; top: 147px; width: 753px;" data-name="BUS_A_MAIN_TOP"></div>
+      <div class="bus" style="left: 798px; top: 147px; width: 753px;" data-name="BUS_B_MAIN_TOP"></div>
+      <div class="bus" style="left: 1601px; top: 147px; width: 754px;" data-name="BUS_C_MAIN_TOP"></div>
+      <div class="bus" style="left: 20px; top: 677px; width: 753px;" data-name="BUS_A_MAIN_BOTTOM"></div>
+      <div class="bus" style="left: 823px; top: 677px; width: 753px;" data-name="BUS_B_MAIN_BOTTOM"></div>
+      <div class="bus" style="left: 1626px; top: 677px; width: 754px;" data-name="BUS_C_MAIN_BOTTOM"></div>
+
+      <!-- =================================================================== -->
+      <!-- ============================ FASE A =============================== -->
+      <!-- =================================================================== -->
+      <div class="phase-label" style="left: 397px; top: 80px;">FASE A</div>
+
+
+      <!-- Alimentação e Retorno FASE A -->
+      <!-- LINHA PRINCIPAL CSA (INCLUÍDA CONFORME SOLICITADO) -->
+      <div class="vertical-line line" style="left: 349px; top: 100px; height: 49px;" data-name="CSA_MAIN_FEED"></div>
+
+
+      <div class="switch magenta" style="left: 335px; top: 85px;" data-name="CSA">
+         <div class="switch-label">CSA</div>
+      </div>
+
+      <!-- SETA FONTE CSA - CENTRO EXATO DA CHAVE CSA -->
+      <div class="fonte-seta" style="left: 350px; top: 50px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 15px solid red; cursor: pointer; transform: translateX(-50%);" data-name="FONTE_CSA" title="Fonte de Energia CSA - Clique para ligar/desligar">
+      </div>
+
+      <!-- LINHA DE CONEXÃO FONTE CSA → CHAVE CSA -->
+      <div class="connection-line" style="left: 350px; top: 65px; width: 3px; height: 20px; background-color: #333;" data-name="CONEXAO_FONTE_CSA"></div>
+
+      <div class="vertical-line line" style="left: 349px; top: 679px; height: 21px;" data-name="CS7A_CONNECTION"></div>
+
+      <!-- CHAVE CS6A - AGORA COM CLASSE "wye-switch" -->
+      <div class="switch wye-switch" style="left: 20px; top: 805px;" data-name="CS6A">
+         <div class="switch-label">CS6A</div>
+      </div>
+
+      <!-- Conexão CS6A ao barramento superior -->
+      <div class="vertical-line line" style="left: 34px; top: 677px; height: 129px;" data-name="CS6A_TO_BUS"></div>
+
+      <!-- CHAVE CS7A - AGORA COM CLASSE "delta-switch" -->
+      <div class="switch delta-switch" style="left: 335px; top: 700px;" data-name="CS7A">
+         <div class="switch-label">CS7A</div>
+      </div>
+      <div class="vertical-line line" style="left: 349px; top: 715px; height: 36px;" data-name="CS7A_LINE_715"></div>
+
+      <!-- Conexão da linha vertical (349, 715) ao centro inferior -->
+      <div class="horizontal-line line" style="left: 349px; top: 750px; width: 452px;" data-name="CS7A_LINE_750"></div>
+      <!-- Linha vertical do centro inferior ao barramento superior -->
+      <div class="vertical-line line" style="left: 798px; top: 147px; height: 605px;" data-name="CS7A_LINE_798"></div>
+
+      <!-- LINHAS ESPECIAIS MENCIONADAS PELO USUÁRIO -->
+      <div class="horizontal-line line" style="left: 349px; top: 124px; width: 2039px; z-index: 1;" data-name="SPECIAL_LINE_2"></div>
+
+      <!-- SÍMBOLOS DE NÃO CONEXÃO - Meio círculo superior -->
+      <div class="no-connection-symbol" style="left: 1180px; top: 119px; width: 8px; height: 4px;" title="Linhas cruzam mas não conectam"></div>
+      <div class="no-connection-symbol" style="left: 1980px; top: 119px; width: 8px; height: 4px;" title="Linhas cruzam mas não conectam"></div>
+
+      <div class="vertical-line line" style="left: 2384px; top: 124px; height: 633px;" data-name="SPECIAL_LINE_3">
+      </div>
+
+      <div class="horizontal-line line" style="left: 1983px; top: 754px; width: 402px;" data-name="SPECIAL_LINE_4"></div>
+
+      <div class="vertical-line line" style="left: 1984px; top: 719px; height: 38px;" data-name="SPECIAL_LINE_5"></div>
+
+      <!-- LINHAS VERTICAIS DO BARRAMENTO PRINCIPAL PARA CP4A1 -->
+      <div class="vertical-line line" style="left: 84px; top: 149px; height: 33px;" data-name="LINE_A1_Q1_FEED"></div>
+      <div class="vertical-line line" style="left: 134px; top: 149px; height: 33px;" data-name="LINE_A1_Q2_FEED"></div>
+      <div class="vertical-line line" style="left: 184px; top: 149px; height: 33px;" data-name="LINE_A1_Q3_FEED"></div>
+      <div class="vertical-line line" style="left: 234px; top: 149px; height: 33px;" data-name="LINE_A1_Q4_FEED"></div>
+      <div class="vertical-line line" style="left: 284px; top: 149px; height: 33px;" data-name="LINE_A1_Q5_FEED"></div>
+
+      <!-- CHAVES Q CP4A1 COM LABELS -->
+      <div class="switch" style="left: 70px; top: 180px;" data-name="Q1_CP4A1">
+         <div class="switch-label">Q1 CP4A1</div>
+      </div>
+      <div class="switch" style="left: 120px; top: 180px;" data-name="Q2_CP4A1">
+         <div class="switch-label">Q2 CP4A1</div>
+      </div>
+      <div class="switch" style="left: 170px; top: 180px;" data-name="Q3_CP4A1">
+         <div class="switch-label">Q3 CP4A1</div>
+      </div>
+      <div class="switch" style="left: 220px; top: 180px;" data-name="Q4_CP4A1">
+         <div class="switch-label">Q4 CP4A1</div>
+      </div>
+      <div class="switch" style="left: 270px; top: 180px;" data-name="Q5_CP4A1">
+         <div class="switch-label">Q5 CP4A1</div>
+      </div>
+
+      <div class="vertical-line line" style="left: 84px; top: 195px; height: 22px;" data-name="Q1-4A1"></div>
+      <div class="vertical-line line" style="left: 134px; top: 195px; height: 22px;" data-name="Q2-4A1"></div>
+      <div class="vertical-line line" style="left: 184px; top: 195px; height: 22px;" data-name="Q3-4A1"></div>
+      <div class="vertical-line line" style="left: 234px; top: 195px; height: 22px;" data-name="Q4-4A1"></div>
+      <div class="vertical-line line" style="left: 284px; top: 195px; height: 22px;" data-name="Q5-4A1"></div>
+      <div class="capacitor" style="left: 70px; top: 215px;" data-name="CAP_Q1-CP4A1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 120px; top: 215px;" data-name="CAP_Q2-CP4A1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 170px; top: 215px;" data-name="CAP_Q3-CP4A1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 220px; top: 215px;" data-name="CAP_Q4-CP4A1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 270px; top: 215px;" data-name="CAP_Q5-CP4A1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <!-- LINHAS VERTICAIS CP4A1 PARA CP3A1 (PARTE 1) -->
+      <div class="vertical-line line" style="left: 84px; top: 230px; height: 32px;" data-name="Q1-4A1.1"></div>
+      <div class="vertical-line line" style="left: 134px; top: 230px; height: 32px;" data-name="Q2-4A1.1"></div>
+      <div class="vertical-line line" style="left: 184px; top: 230px; height: 32px;" data-name="Q3-4A1.1"></div>
+      <div class="vertical-line line" style="left: 234px; top: 230px; height: 32px;" data-name="Q4-4A1.1"></div>
+      <div class="vertical-line line" style="left: 284px; top: 230px; height: 32px;" data-name="Q5-4A1.1"></div>
+
+      <div class="capacitor" style="left: 70px; top: 260px;" data-name="CAP_Q1-CP3A1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 120px; top: 260px;" data-name="CAP_Q2-CP3A1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 170px; top: 260px;" data-name="CAP_Q3-CP3A1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 220px; top: 260px;" data-name="CAP_Q4-CP3A1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 270px; top: 260px;" data-name="CAP_Q5-CP3A1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <!-- LINHAS VERTICAIS CP3A1 PARA BARRAMENTO INTERMEDIÁRIO (PARTE 2) -->
+      <div class="vertical-line line" style="left: 84px; top: 275px; height: 32px;" data-name="Q1-4A1.2"></div>
+      <div class="vertical-line line" style="left: 134px; top: 275px; height: 32px;" data-name="Q2-4A1.2"></div>
+      <div class="vertical-line line" style="left: 184px; top: 275px; height: 32px;" data-name="Q3-4A1.2"></div>
+      <div class="vertical-line line" style="left: 234px; top: 275px; height: 32px;" data-name="Q4-4A1.2"></div>
+      <div class="vertical-line line" style="left: 284px; top: 275px; height: 32px;" data-name="Q5-4A1.2"></div>
+
+      <!-- CHAVES Q CP3A1 COM LABELS -->
+      <div class="switch" style="left: 70px; top: 305px;" data-name="Q1_CP3A1">
+         <div class="switch-label">Q1 CP3A1</div>
+      </div>
+      <div class="switch" style="left: 120px; top: 305px;" data-name="Q2_CP3A1">
+         <div class="switch-label">Q2 CP3A1</div>
+      </div>
+      <div class="switch" style="left: 170px; top: 305px;" data-name="Q3_CP3A1">
+         <div class="switch-label">Q3 CP3A1</div>
+      </div>
+      <div class="switch" style="left: 220px; top: 305px;" data-name="Q4_CP3A1">
+         <div class="switch-label">Q4 CP3A1</div>
+      </div>
+      <div class="switch" style="left: 270px; top: 305px;" data-name="Q5_CP3A1">
+         <div class="switch-label">Q5 CP3A1</div>
+      </div>
+
+      <!-- LINHAS VERTICAIS PARA BARRAMENTO INTERMEDIÁRIO A1 -->
+      <div class="vertical-line line" style="left: 84px; top: 320px; height: 14px;" data-name="LINE_A1_Q1_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 134px; top: 320px; height: 14px;" data-name="LINE_A1_Q2_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 184px; top: 320px; height: 14px;" data-name="LINE_A1_Q3_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 234px; top: 320px; height: 14px;" data-name="LINE_A1_Q4_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 284px; top: 320px; height: 14px;" data-name="LINE_A1_Q5_TO_INTER"></div>
+
+      <!-- BARRAMENTO INTERMEDIÁRIO A1 -->
+      <div class="bus" style="left: 34px; top: 332px; width: 270px;" data-name="BUS_A1_INTERMEDIATE"></div>
+
+      <!-- BARRAMENTO INFERIOR A1 -->
+      <div class="bus" style="left: 55px; top: 417px; width: 282px;" data-name="BUS_A1_LOWER"></div>
+
+      <!-- LINHAS PARA CHAVES Q CP2A1 -->
+      <div class="vertical-line line" style="left: 84px; top: 419px; height: 23px;" data-name="LINE_Q1_CP2A1"></div>
+      <div class="vertical-line line" style="left: 134px; top: 419px; height: 23px;" data-name="LINE_Q2_CP2A1"></div>
+      <div class="vertical-line line" style="left: 184px; top: 419px; height: 23px;" data-name="LINE_Q3_CP2A1"></div>
+      <div class="vertical-line line" style="left: 234px; top: 419px; height: 23px;" data-name="LINE_Q4_CP2A1"></div>
+      <div class="vertical-line line" style="left: 284px; top: 419px; height: 23px;" data-name="LINE_Q5_CP2A1"></div>
+
+      <!-- CHAVES Q CP2A1 -->
+      <div class="switch" style="left: 70px; top: 440px;" data-name="Q1_CP2A1">
+         <div class="switch-label">Q1 CP2A1</div>
+      </div>
+      <div class="switch" style="left: 120px; top: 440px;" data-name="Q2_CP2A1">
+         <div class="switch-label">Q2 CP2A1</div>
+      </div>
+      <div class="switch" style="left: 170px; top: 440px;" data-name="Q3_CP2A1">
+         <div class="switch-label">Q3 CP2A1</div>
+      </div>
+      <div class="switch" style="left: 220px; top: 440px;" data-name="Q4_CP2A1">
+         <div class="switch-label">Q4 CP2A1</div>
+      </div>
+      <div class="switch" style="left: 270px; top: 440px;" data-name="Q5_CP2A1">
+         <div class="switch-label">Q5 CP2A1</div>
+      </div>
+
+      <!-- LINHAS CP2A1.1 (APÓS CHAVES) -->
+      <div class="vertical-line line" style="left: 84px; top: 455px; height: 17px;" data-name="Q1_CP2A1.1"></div>
+      <div class="vertical-line line" style="left: 134px; top: 455px; height: 17px;" data-name="Q2_CP2A1.1"></div>
+      <div class="vertical-line line" style="left: 184px; top: 455px; height: 17px;" data-name="Q3_CP2A1.1"></div>
+      <div class="vertical-line line" style="left: 234px; top: 455px; height: 17px;" data-name="Q4_CP2A1.1"></div>
+      <div class="vertical-line line" style="left: 284px; top: 455px; height: 17px;" data-name="Q5_CP2A1.1"></div>
+
+      <!-- LINHAS CP2A1.2 (APÓS CHAVES) -->
+      <div class="vertical-line line" style="left: 84px; top:  500px; height: 17px;" data-name="Q1_CP2A1.2"></div>
+      <div class="vertical-line line" style="left: 134px; top: 500px; height: 17px;" data-name="Q2_CP2A1.2"></div>
+      <div class="vertical-line line" style="left: 184px; top: 500px; height: 17px;" data-name="Q3_CP2A1.2"></div>
+      <div class="vertical-line line" style="left: 234px; top: 500px; height: 17px;" data-name="Q4_CP2A1.2"></div>
+      <div class="vertical-line line" style="left: 284px; top: 500px; height: 17px;" data-name="Q5_CP2A1.2"></div>
+
+      <div class="capacitor" style="left: 70px; top: 470px;" data-name="CAP_Q1-CP2A1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 120px; top: 470px;" data-name="CAP_Q2-CP2A1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 170px; top: 470px;" data-name="CAP_Q3-CP2A1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 220px; top: 470px;" data-name="CAP_Q4-CP2A1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 270px; top: 470px;" data-name="CAP_Q5-CP2A1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <!-- LINHAS VERTICAIS PARA LINHA COLETORA -->
+      <div class="vertical-line line" style="left: 84px; top: 485px; height: 19px;" data-name="Q1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 134px; top: 485px; height: 19px;" data-name="Q2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 184px; top: 485px; height: 19px;" data-name="Q3_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 234px; top: 485px; height: 19px;" data-name="Q4_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 284px; top: 485px; height: 19px;" data-name="Q5_TO_COLLECTOR"></div>
+
+      <!-- LINHA HORIZONTAL COLETORA + LINHA VERTICAL TO CS1A1 -->
+      <div class="horizontal-line line" style="left: 84px; top: 502px; width: 252px;" data-name="COLLECTOR_LINE"></div>
+      <div class="vertical-line line" style="left: 334px; top: 501px; height: 121px;" data-name="TO_CS1A1"></div>
+
+
+      <div class="capacitor" style="left: 70px; top: 515px;" data-name="CAP_Q1-CP1A1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 120px; top: 515px;" data-name="CAP_Q2-CP1A1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 170px; top: 515px;" data-name="CAP_Q3-CP1A1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 220px; top: 515px;" data-name="CAP_Q4-CP1A1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 270px; top: 515px;" data-name="CAP_Q5-CP1A1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 84px; top: 530px; height: 32px;" data-name="Q1_LINE_535"></div>
+      <div class="vertical-line line" style="left: 134px; top: 530px; height: 32px;" data-name="Q2_LINE_535"></div>
+      <div class="vertical-line line" style="left: 184px; top: 530px; height: 32px;" data-name="Q3_LINE_535"></div>
+      <div class="vertical-line line" style="left: 234px; top: 530px; height: 32px;" data-name="Q4_LINE_535"></div>
+      <div class="vertical-line line" style="left: 284px; top: 530px; height: 32px;" data-name="Q5_LINE_535"></div>
+
+      <div class="switch" style="left: 70px; top: 560px;" data-name="Q1_CP1A1">
+         <div class="switch-label">Q1 CP1A1</div>
+      </div>
+      <div class="switch" style="left: 120px; top: 560px;" data-name="Q2_CP1A1">
+         <div class="switch-label">Q2 CP1A1</div>
+      </div>
+      <div class="switch" style="left: 170px; top: 560px;" data-name="Q3_CP1A1">
+         <div class="switch-label">Q3 CP1A1</div>
+      </div>
+      <div class="switch" style="left: 220px; top: 560px;" data-name="Q4_CP1A1">
+         <div class="switch-label">Q4 CP1A1</div>
+      </div>
+      <div class="switch" style="left: 270px; top: 560px;" data-name="Q5_CP1A1">
+         <div class="switch-label">Q5 CP1A1</div>
+      </div>
+      <div class="vertical-line line" style="left: 84px; top: 575px; height: 105px;" data-name="Q1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 134px; top: 575px; height: 105px;" data-name="Q2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 184px; top: 575px; height: 105px;" data-name="Q3_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 234px; top: 575px; height: 105px;" data-name="Q4_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 284px; top: 575px; height: 105px;" data-name="Q5_RETURN_575"></div>
+
+      <!-- BLOCO A2 (ELEMENTOS MOVIDOS) -->
+      <div class="vertical-line line" style="left: 434px; top: 149px; height: 33px;" data-name="LINE_A2_Q1_FEED"></div>
+      <div class="vertical-line line" style="left: 484px; top: 149px; height: 33px;" data-name="LINE_A2_Q2_FEED"></div>
+      <div class="vertical-line line" style="left: 534px; top: 149px; height: 33px;" data-name="LINE_A2_Q3_FEED"></div>
+      <div class="vertical-line line" style="left: 584px; top: 149px; height: 33px;" data-name="LINE_A2_Q4_FEED"></div>
+      <div class="vertical-line line" style="left: 634px; top: 149px; height: 33px;" data-name="LINE_A2_Q5_FEED"></div>
+      <div class="switch" style="left: 420px; top: 180px;" data-name="Q1_CP4A2">
+         <div class="switch-label">Q1 CP4A2</div>
+      </div>
+      <div class="switch" style="left: 470px; top: 180px;" data-name="Q2_CP4A2">
+         <div class="switch-label">Q2 CP4A2</div>
+      </div>
+      <div class="switch" style="left: 520px; top: 180px;" data-name="Q3_CP4A2">
+         <div class="switch-label">Q3 CP4A2</div>
+      </div>
+      <div class="switch" style="left: 570px; top: 180px;" data-name="Q4_CP4A2">
+         <div class="switch-label">Q4 CP4A2</div>
+      </div>
+      <div class="switch" style="left: 620px; top: 180px;" data-name="Q5_CP4A2">
+         <div class="switch-label">Q5 CP4A2</div>
+      </div>
+      <div class="vertical-line line" style="left: 434px; top: 195px; height: 22px;" data-name="Q1-4A2"></div>
+      <div class="vertical-line line" style="left: 484px; top: 195px; height: 22px;" data-name="Q2-4A2"></div>
+      <div class="vertical-line line" style="left: 534px; top: 195px; height: 22px;" data-name="Q3-4A2"></div>
+      <div class="vertical-line line" style="left: 584px; top: 195px; height: 22px;" data-name="Q4-4A2"></div>
+      <div class="vertical-line line" style="left: 634px; top: 195px; height: 22px;" data-name="Q5-4A2"></div>
+      <div class="capacitor" style="left: 420px; top: 215px;" data-name="CAP_Q1-CP4A2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 470px; top: 215px;" data-name="CAP_Q2-CP4A2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 520px; top: 215px;" data-name="CAP_Q3-CP4A2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 570px; top: 215px;" data-name="CAP_Q4-CP4A2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 620px; top: 215px;" data-name="CAP_Q5-CP4A2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 434px; top: 230px; height: 32px;" data-name="Q1-4A2.1"></div>
+      <div class="vertical-line line" style="left: 484px; top: 230px; height: 32px;" data-name="Q2-4A2.1"></div>
+      <div class="vertical-line line" style="left: 534px; top: 230px; height: 32px;" data-name="Q3-4A2.1"></div>
+      <div class="vertical-line line" style="left: 584px; top: 230px; height: 32px;" data-name="Q4-4A2.1"></div>
+      <div class="vertical-line line" style="left: 634px; top: 230px; height: 32px;" data-name="Q5-4A2.1"></div>
+      <div class="capacitor" style="left: 420px; top: 260px;" data-name="CAP_Q1-CP3A2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 470px; top: 260px;" data-name="CAP_Q2-CP3A2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 520px; top: 260px;" data-name="CAP_Q3-CP3A2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 570px; top: 260px;" data-name="CAP_Q4-CP3A2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 620px; top: 260px;" data-name="CAP_Q5-CP3A2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 434px; top: 275px; height: 32px;" data-name="Q1-4A2.2"></div>
+      <div class="vertical-line line" style="left: 484px; top: 275px; height: 32px;" data-name="Q2-4A2.2"></div>
+      <div class="vertical-line line" style="left: 534px; top: 275px; height: 32px;" data-name="Q3-4A2.2"></div>
+      <div class="vertical-line line" style="left: 584px; top: 275px; height: 32px;" data-name="Q4-4A2.2"></div>
+      <div class="vertical-line line" style="left: 634px; top: 275px; height: 32px;" data-name="Q5-4A2.2"></div>
+      <div class="switch" style="left: 420px; top: 305px;" data-name="Q1_CP3A2">
+         <div class="switch-label">Q1 CP3A2</div>
+      </div>
+      <div class="switch" style="left: 470px; top: 305px;" data-name="Q2_CP3A2">
+         <div class="switch-label">Q2 CP3A2</div>
+      </div>
+      <div class="switch" style="left: 520px; top: 305px;" data-name="Q3_CP3A2">
+         <div class="switch-label">Q3 CP3A2</div>
+      </div>
+      <div class="switch" style="left: 570px; top: 305px;" data-name="Q4_CP3A2">
+         <div class="switch-label">Q4 CP3A2</div>
+      </div>
+      <div class="switch" style="left: 620px; top: 305px;" data-name="Q5_CP3A2">
+         <div class="switch-label">Q5 CP3A2</div>
+      </div>
+      <div class="vertical-line line" style="left: 434px; top: 320px; height: 14px;" data-name="LINE_A2_Q1_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 484px; top: 320px; height: 14px;" data-name="LINE_A2_Q2_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 534px; top: 320px; height: 14px;" data-name="LINE_A2_Q3_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 584px; top: 320px; height: 14px;" data-name="LINE_A2_Q4_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 634px; top: 320px; height: 14px;" data-name="LINE_A2_Q5_TO_INTER"></div>
+      <div class="bus" style="left: 369px; top: 332px; width: 285px;" data-name="BUS_A2_INTERMEDIATE"></div>
+      <div class="bus" style="left: 405px; top: 417px; width: 317px;" data-name="BUS_A2_LOWER"></div>
+      <div class="vertical-line line" style="left: 434px; top: 419px; height: 23px;" data-name="LINE_Q1_CP2A2"></div>
+      <div class="vertical-line line" style="left: 484px; top: 419px; height: 23px;" data-name="LINE_Q2_CP2A2"></div>
+      <div class="vertical-line line" style="left: 534px; top: 419px; height: 23px;" data-name="LINE_Q3_CP2A2"></div>
+      <div class="vertical-line line" style="left: 584px; top: 419px; height: 23px;" data-name="LINE_Q4_CP2A2"></div>
+      <div class="vertical-line line" style="left: 634px; top: 419px; height: 23px;" data-name="LINE_Q5_CP2A2"></div>
+      <div class="switch" style="left: 420px; top: 440px;" data-name="Q1_CP2A2">
+         <div class="switch-label">Q1 CP2A2</div>
+      </div>
+      <div class="switch" style="left: 470px; top: 440px;" data-name="Q2_CP2A2">
+         <div class="switch-label">Q2 CP2A2</div>
+      </div>
+      <div class="switch" style="left: 520px; top: 440px;" data-name="Q3_CP2A2">
+         <div class="switch-label">Q3 CP2A2</div>
+      </div>
+      <div class="switch" style="left: 570px; top: 440px;" data-name="Q4_CP2A2">
+         <div class="switch-label">Q4 CP2A2</div>
+      </div>
+      <div class="switch" style="left: 620px; top: 440px;" data-name="Q5_CP2A2">
+         <div class="switch-label">Q5 CP2A2</div>
+      </div>
+      <div class="vertical-line line" style="left: 434px; top: 455px; height: 17px;" data-name="Q1_CP2A2.1"></div>
+      <div class="vertical-line line" style="left: 484px; top: 455px; height: 17px;" data-name="Q2_CP2A2.1"></div>
+      <div class="vertical-line line" style="left: 534px; top: 455px; height: 17px;" data-name="Q3_CP2A2.1"></div>
+      <div class="vertical-line line" style="left: 584px; top: 455px; height: 17px;" data-name="Q4_CP2A2.1"></div>
+      <div class="vertical-line line" style="left: 634px; top: 455px; height: 17px;" data-name="Q5_CP2A2.1"></div>
+
+      <div class="vertical-line line" style="left: 434px; top: 500px; height: 17px;" data-name="Q1_CP2A2.2"></div>
+      <div class="vertical-line line" style="left: 484px; top: 500px; height: 17px;" data-name="Q2_CP2A2.2"></div>
+      <div class="vertical-line line" style="left: 534px; top: 500px; height: 17px;" data-name="Q3_CP2A2.2"></div>
+      <div class="vertical-line line" style="left: 584px; top: 500px; height: 17px;" data-name="Q4_CP2A2.2"></div>
+      <div class="vertical-line line" style="left: 634px; top: 500px; height: 17px;" data-name="Q5_CP2A2.2"></div>
+
+      <div class="capacitor" style="left: 420px; top: 470px;" data-name="CAP_Q1-CP2A2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 470px; top: 470px;" data-name="CAP_Q2-CP2A2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 520px; top: 470px;" data-name="CAP_Q3-CP2A2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 570px; top: 470px;" data-name="CAP_Q4-CP2A2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 620px; top: 470px;" data-name="CAP_Q5-CP2A2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 434px; top: 485px; height: 19px;" data-name="Q1_A2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 484px; top: 485px; height: 19px;" data-name="Q2_A2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 534px; top: 485px; height: 19px;" data-name="Q3_A2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 584px; top: 485px; height: 19px;" data-name="Q4_A2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 634px; top: 485px; height: 19px;" data-name="Q5_A2_TO_COLLECTOR"></div>
+      <div class="horizontal-line line" style="left: 434px; top: 502px; width: 285px;" data-name="COLLECTOR_LINE_A2"></div>
+      <div class="vertical-line line" style="left: 719px; top: 501px; height: 121px;" data-name="TO_CS1A2"></div>
+
+
+      <div class="capacitor" style="left: 420px; top: 515px;" data-name="CAP_Q1-CP1A2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 470px; top: 515px;" data-name="CAP_Q2-CP1A2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 520px; top: 515px;" data-name="CAP_Q3-CP1A2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 570px; top: 515px;" data-name="CAP_Q4-CP1A2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 620px; top: 515px;" data-name="CAP_Q5-CP1A2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 434px; top: 530px; height: 32px;" data-name="Q1_CP1A2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 484px; top: 530px; height: 32px;" data-name="Q2_CP1A2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 534px; top: 530px; height: 32px;" data-name="Q3_CP1A2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 584px; top: 530px; height: 32px;" data-name="Q4_CP1A2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 634px; top: 530px; height: 32px;" data-name="Q5_CP1A2_LINE_530"></div>
+      <div class="switch" style="left: 420px; top: 560px;" data-name="Q1_CP1A2">
+         <div class="switch-label">Q1 CP1A2</div>
+      </div>
+      <div class="switch" style="left: 470px; top: 560px;" data-name="Q2_CP1A2">
+         <div class="switch-label">Q2 CP1A2</div>
+      </div>
+      <div class="switch" style="left: 520px; top: 560px;" data-name="Q3_CP1A2">
+         <div class="switch-label">Q3 CP1A2</div>
+      </div>
+      <div class="switch" style="left: 570px; top: 560px;" data-name="Q4_CP1A2">
+         <div class="switch-label">Q4 CP1A2</div>
+      </div>
+      <div class="switch" style="left: 620px; top: 560px;" data-name="Q5_CP1A2">
+         <div class="switch-label">Q5 CP1A2</div>
+      </div>
+      <div class="vertical-line line" style="left: 434px; top: 575px; height: 105px;" data-name="Q1_A2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 484px; top: 575px; height: 105px;" data-name="Q2_A2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 534px; top: 575px; height: 105px;" data-name="Q3_A2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 584px; top: 575px; height: 105px;" data-name="Q4_A2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 634px; top: 575px; height: 105px;" data-name="Q5_A2_RETURN_575"></div>
+
+      <!-- CHAVES E CONEXÕES FASE A (BLOCO 1) -->
+      <div class="switch yellow" style="left: 320px; top: 620px;" data-name="CS1A1">
+         <div class="switch-label">CS1A1</div>
+      </div>
+
+      <div class="vertical-line line" style="left: 334px; top: 635px; height: 45px;" data-name="LINE_CS1A1"></div>
+
+      <!-- CHAVE CS2A1 - CONTROLA CP4A1/CP3A1 -->
+      <div class="switch yellow" style="left: 320px; top: 242.5px;" data-name="CS2A1">
+         <div class="switch-label">CS2A1</div>
+      </div>
+
+      <!-- LINHAS VERTICAIS IMPORTANTES -->
+      <div class="vertical-line line" style="left: 334px; top: 149px; height: 95.5px;" data-name="LINE_CS2A1_FEED"></div>
+
+      <div class="vertical-line line" style="left: 334px; top: 257.5px; height: 161.5px;" data-name="LINE_CS2A1_TO_BUS_A1_LOWER">
+      </div>
+
+      <!-- CHAVE CS3A1 - CONTROLA BARRAMENTO INTERMEDIÁRIO -->
+      <div class="switch yellow" style="left: 20px; top: 500px;" data-name="CS3A1">
+         <div class="switch-label">CS3A1</div>
+      </div>
+
+      <div class="vertical-line line" style="left: 34px; top: 334px; height: 168px;" data-name="LINE_CS3A1_CONTROL"></div>
+
+      <div class="vertical-line line" style="left: 34px; top: 515px; height: 165px;" data-name="RETORNO_34_515"></div>
+
+      <!-- CHAVE CS4A1 E LINHAS L6/L7 -->
+      <div class="switch yellow" style="left: 170px; top: 365px;" data-name="CS4A1">
+         <div class="switch-label">CS4A1</div>
+      </div>
+
+      <!-- LINHA L6 -->
+      <div class="vertical-line line" style="left: 184px; top: 334px; height: 33px;" data-name="L6"></div>
+
+      <!-- LINHA L7 -->
+      <div class="vertical-line line" style="left: 184px; top: 380px; height: 40px;" data-name="L7"></div>
+
+      <!-- CHAVES E CONEXÕES FASE A (BLOCO 2 MOVIDO) -->
+      <div class="switch yellow" style="left: 705px; top: 620px;" data-name="CS1A2">
+         <div class="switch-label">CS1A2</div>
+      </div>
+      <div class="vertical-line line" style="left: 719px; top: 635px; height: 45px;" data-name="LINE_CS1A2"></div>
+      <div class="switch yellow" style="left: 705px; top: 242.5px;" data-name="CS2A2">
+         <div class="switch-label">CS2A2</div>
+      </div>
+      <div class="vertical-line line" style="left: 719px; top: 149px; height: 95.5px;" data-name="LINE_CS2A2_FEED"></div>
+      <div class="vertical-line line" style="left: 719px; top: 257.5px; height: 161.5px;" data-name="LINE_CS2A2_TO_BUS_A2_LOWER"></div>
+      <div class="switch yellow" style="left: 355px; top: 500px;" data-name="CS3A2">
+         <div class="switch-label">CS3A2</div>
+      </div>
+      <div class="vertical-line line" style="left: 369px; top: 334px; height: 168px;" data-name="LINE_CS3A2_CONTROL"></div>
+      <div class="vertical-line line" style="left: 369px; top: 515px; height: 165px;" data-name="RETORNO_369_515"></div>
+
+      <div class="switch yellow" style="left: 520px; top: 365px;" data-name="CS4A2">
+         <div class="switch-label">CS4A2</div>
+      </div>
+      <div class="vertical-line line" style="left: 534px; top: 334px; height: 33px;" data-name="L6_A2"></div>
+      <div class="vertical-line line" style="left: 534px; top: 380px; height: 40px;" data-name="L7_A2"></div>
+
+      <!-- =================================================================== -->
+      <!-- ============================ FASE B =============================== -->
+      <!-- =================================================================== -->
+      <div class="phase-label" style="left: 1230px; top: 80px;">FASE B</div>
+      <!-- Alimentação e Retorno FASE B -->
+      <div class="vertical-line line" style="left: 1184px; top: 100px; height: 49px;" data-name="CSB_MAIN_FEED"></div>
+      <div class="switch magenta" style="left: 1170px; top: 85px;" data-name="CSB">
+         <div class="switch-label">CSB</div>
+      </div>
+
+      <!-- SETA FONTE CSB - CENTRO EXATO DA CHAVE CSB -->
+      <div class="fonte-seta" style="left: 1184px; top: 50px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 15px solid red; cursor: pointer; transform: translateX(-50%);" data-name="FONTE_CSB" title="Fonte de Energia CSB - Clique para ligar/desligar">
+      </div>
+
+      <!-- LINHA DE CONEXÃO FONTE CSB → CHAVE CSB -->
+      <div class="connection-line" style="left: 1184px; top: 65px; width: 3px; height: 20px; background-color: #333;" data-name="CONEXAO_FONTE_CSB"></div>
+      <div class="vertical-line line" style="left: 1184px; top: 679px; height: 21px;" data-name="CS7B_CONNECTION"></div>
+      <!-- CHAVE CS6B - AGORA COM CLASSE "wye-switch" -->
+      <div class="switch wye-switch" style="left: 1620px; top: 805px;" data-name="CS6B">
+         <div class="switch-label">CS6B</div>
+      </div>
+
+      <!-- Conexão CS6B ao barramento superior -->
+      <div class="vertical-line line" style="left: 1634px; top: 677px; height: 129px;" data-name="CS6B_TO_BUS"></div>
+
+      <!-- CHAVE CS7B - AGORA COM CLASSE "delta-switch" -->
+      <div class="switch delta-switch" style="left: 1170px; top: 700px;" data-name="CS7B">
+         <div class="switch-label">CS7B</div>
+      </div>
+      <div class="vertical-line line" style="left: 1184px; top: 715px; height: 36px;" data-name="CS7B_LINE_715"></div>
+      <!-- Conexão da linha vertical (1184, 715) ao centro inferior (entre B e C) -->
+      <div class="horizontal-line line" style="left: 1184px; top: 750px; width: 420px;" data-name="CS7B_LINE_750"></div>
+      <!-- Linha vertical do centro inferior (entre B e C) à linha vertical superior (Fase C) -->
+      <div class="vertical-line line" style="left: 1601px; top: 147px; height: 605px;" data-name="CS7B_LINE_1601"></div>
+
+      <!-- BLOCO B1 -->
+      <div class="vertical-line line" style="left: 884px; top: 149px; height: 33px;" data-name="LINE_B1_Q1_FEED"></div>
+      <div class="vertical-line line" style="left: 934px; top: 149px; height: 33px;" data-name="LINE_B1_Q2_FEED"></div>
+      <div class="vertical-line line" style="left: 984px; top: 149px; height: 33px;" data-name="LINE_B1_Q3_FEED"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 149px; height: 33px;" data-name="LINE_B1_Q4_FEED"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 149px; height: 33px;" data-name="LINE_B1_Q5_FEED"></div>
+      <div class="switch" style="left: 870px; top: 180px;" data-name="Q1_CP4B1">
+         <div class="switch-label">Q1 CP4B1</div>
+      </div>
+      <div class="switch" style="left: 920px; top: 180px;" data-name="Q2_CP4B1">
+         <div class="switch-label">Q2 CP4B1</div>
+      </div>
+      <div class="switch" style="left: 970px; top: 180px;" data-name="Q3_CP4B1">
+         <div class="switch-label">Q3 CP4B1</div>
+      </div>
+      <div class="switch" style="left: 1020px; top: 180px;" data-name="Q4_CP4B1">
+         <div class="switch-label">Q4 CP4B1</div>
+      </div>
+      <div class="switch" style="left: 1070px; top: 180px;" data-name="Q5_CP4B1">
+         <div class="switch-label">Q5 CP4B1</div>
+      </div>
+      <div class="vertical-line line" style="left: 884px; top: 195px; height: 22px;" data-name="Q1-4B1"></div>
+      <div class="vertical-line line" style="left: 934px; top: 195px; height: 22px;" data-name="Q2-4B1"></div>
+      <div class="vertical-line line" style="left: 984px; top: 195px; height: 22px;" data-name="Q3-4B1"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 195px; height: 22px;" data-name="Q4-4B1"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 195px; height: 22px;" data-name="Q5-4B1"></div>
+      <div class="capacitor" style="left: 870px; top: 215px;" data-name="CAP_Q1-CP4B1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 920px; top: 215px;" data-name="CAP_Q2-CP4B1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 970px; top: 215px;" data-name="CAP_Q3-CP4B1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1020px; top: 215px;" data-name="CAP_Q4-CP4B1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1070px; top: 215px;" data-name="CAP_Q5-CP4B1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 884px; top: 230px; height: 32px;" data-name="Q1-4B1.1"></div>
+      <div class="vertical-line line" style="left: 934px; top: 230px; height: 32px;" data-name="Q2-4B1.1"></div>
+      <div class="vertical-line line" style="left: 984px; top: 230px; height: 32px;" data-name="Q3-4B1.1"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 230px; height: 32px;" data-name="Q4-4B1.1"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 230px; height: 32px;" data-name="Q5-4B1.1"></div>
+      <div class="capacitor" style="left: 870px; top: 260px;" data-name="CAP_Q1-CP3B1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 920px; top: 260px;" data-name="CAP_Q2-CP3B1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 970px; top: 260px;" data-name="CAP_Q3-CP3B1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1020px; top: 260px;" data-name="CAP_Q4-CP3B1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1070px; top: 260px;" data-name="CAP_Q5-CP3B1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 884px; top: 275px; height: 32px;" data-name="Q1-4B1.2"></div>
+      <div class="vertical-line line" style="left: 934px; top: 275px; height: 32px;" data-name="Q2-4B1.2"></div>
+      <div class="vertical-line line" style="left: 984px; top: 275px; height: 32px;" data-name="Q3-4B1.2"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 275px; height: 32px;" data-name="Q4-4B1.2"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 275px; height: 32px;" data-name="Q5-4B1.2"></div>
+      <div class="switch" style="left: 870px; top: 305px;" data-name="Q1_CP3B1">
+         <div class="switch-label">Q1 CP3B1</div>
+      </div>
+      <div class="switch" style="left: 920px; top: 305px;" data-name="Q2_CP3B1">
+         <div class="switch-label">Q2 CP3B1</div>
+      </div>
+      <div class="switch" style="left: 970px; top: 305px;" data-name="Q3_CP3B1">
+         <div class="switch-label">Q3 CP3B1</div>
+      </div>
+      <div class="switch" style="left: 1020px; top: 305px;" data-name="Q4_CP3B1">
+         <div class="switch-label">Q4 CP3B1</div>
+      </div>
+      <div class="switch" style="left: 1070px; top: 305px;" data-name="Q5_CP3B1">
+         <div class="switch-label">Q5 CP3B1</div>
+      </div>
+      <div class="vertical-line line" style="left: 884px; top: 320px; height: 14px;" data-name="LINE_B1_Q1_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 934px; top: 320px; height: 14px;" data-name="LINE_B1_Q2_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 984px; top: 320px; height: 14px;" data-name="LINE_B1_Q3_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 320px; height: 14px;" data-name="LINE_B1_Q4_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 320px; height: 14px;" data-name="LINE_B1_Q5_TO_INTER"></div>
+      <div class="bus" style="left: 834px; top: 332px; width: 270px;" data-name="BUS_B1_INTERMEDIATE"></div>
+      <div class="bus" style="left: 855px; top: 417px; width: 317px;" data-name="BUS_B1_LOWER"></div>
+      <div class="vertical-line line" style="left: 884px; top: 419px; height: 23px;" data-name="LINE_Q1_CP2B1"></div>
+      <div class="vertical-line line" style="left: 934px; top: 419px; height: 23px;" data-name="LINE_Q2_CP2B1"></div>
+      <div class="vertical-line line" style="left: 984px; top: 419px; height: 23px;" data-name="LINE_Q3_CP2B1"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 419px; height: 23px;" data-name="LINE_Q4_CP2B1"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 419px; height: 23px;" data-name="LINE_Q5_CP2B1"></div>
+      <div class="switch" style="left: 870px; top: 440px;" data-name="Q1_CP2B1">
+         <div class="switch-label">Q1 CP2B1</div>
+      </div>
+      <div class="switch" style="left: 920px; top: 440px;" data-name="Q2_CP2B1">
+         <div class="switch-label">Q2 CP2B1</div>
+      </div>
+      <div class="switch" style="left: 970px; top: 440px;" data-name="Q3_CP2B1">
+         <div class="switch-label">Q3 CP2B1</div>
+      </div>
+      <div class="switch" style="left: 1020px; top: 440px;" data-name="Q4_CP2B1">
+         <div class="switch-label">Q4 CP2B1</div>
+      </div>
+      <div class="switch" style="left: 1070px; top: 440px;" data-name="Q5_CP2B1">
+         <div class="switch-label">Q5 CP2B1</div>
+      </div>
+      <div class="vertical-line line" style="left: 884px; top: 455px; height: 17px;" data-name="Q1_CP2B1.1"></div>
+      <div class="vertical-line line" style="left: 934px; top: 455px; height: 17px;" data-name="Q2_CP2B1.1"></div>
+      <div class="vertical-line line" style="left: 984px; top: 455px; height: 17px;" data-name="Q3_CP2B1.1"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 455px; height: 17px;" data-name="Q4_CP2B1.1"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 455px; height: 17px;" data-name="Q5_CP2B1.1"></div>
+      <div class="capacitor" style="left: 870px; top: 470px;" data-name="CAP_Q1-CP2B1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 920px; top: 470px;" data-name="CAP_Q2-CP2B1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 970px; top: 470px;" data-name="CAP_Q3-CP2B1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1020px; top: 470px;" data-name="CAP_Q4-CP2B1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1070px; top: 470px;" data-name="CAP_Q5-CP2B1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 884px; top: 485px; height: 19px;" data-name="Q1_B1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 934px; top: 485px; height: 19px;" data-name="Q2_B1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 984px; top: 485px; height: 19px;" data-name="Q3_B1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 485px; height: 19px;" data-name="Q4_B1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 485px; height: 19px;" data-name="Q5_B1_TO_COLLECTOR"></div>
+
+      <div class="vertical-line line" style="left: 884px; top: 500px; height: 19px;" data-name="Q1_CP2B1.2"></div>
+      <div class="vertical-line line" style="left: 934px; top: 500px; height: 19px;" data-name="Q2_CP2B1.2"></div>
+      <div class="vertical-line line" style="left: 984px; top: 500px; height: 19px;" data-name="Q3_CP2B1.2"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 500px; height: 19px;" data-name="Q4_CP2B1.2"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 500px; height: 19px;" data-name="Q5_CP2B1.2"></div>
+
+
+      <div class="horizontal-line line" style="left: 884px; top: 502px; width: 287px;" data-name="COLLECTOR_LINE_B1"></div>
+      <div class="vertical-line line" style="left: 1169px; top: 501px; height: 121px;" data-name="TO_CS1B1"></div>
+
+
+      <div class="capacitor" style="left: 870px; top: 515px;" data-name="CAP_Q1-CP1B1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 920px; top: 515px;" data-name="CAP_Q2-CP1B1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 970px; top: 515px;" data-name="CAP_Q3-CP1B1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1020px; top: 515px;" data-name="CAP_Q4-CP1B1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1070px; top: 515px;" data-name="CAP_Q5-CP1B1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 884px; top: 530px; height: 32px;" data-name="Q1_CP1B1_LINE_530"></div>
+      <div class="vertical-line line" style="left: 934px; top: 530px; height: 32px;" data-name="Q2_CP1B1_LINE_530"></div>
+      <div class="vertical-line line" style="left: 984px; top: 530px; height: 32px;" data-name="Q3_CP1B1_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 530px; height: 32px;" data-name="Q4_CP1B1_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 530px; height: 32px;" data-name="Q5_CP1B1_LINE_530"></div>
+      <div class="switch" style="left: 870px; top: 560px;" data-name="Q1_CP1B1">
+         <div class="switch-label">Q1 CP1B1</div>
+      </div>
+      <div class="switch" style="left: 920px; top: 560px;" data-name="Q2_CP1B1">
+         <div class="switch-label">Q2 CP1B1</div>
+      </div>
+      <div class="switch" style="left: 970px; top: 560px;" data-name="Q3_CP1B1">
+         <div class="switch-label">Q3 CP1B1</div>
+      </div>
+      <div class="switch" style="left: 1020px; top: 560px;" data-name="Q4_CP1B1">
+         <div class="switch-label">Q4 CP1B1</div>
+      </div>
+      <div class="switch" style="left: 1070px; top: 560px;" data-name="Q5_CP1B1">
+         <div class="switch-label">Q5 CP1B1</div>
+      </div>
+      <div class="vertical-line line" style="left: 884px; top: 575px; height: 105px;" data-name="Q1_B1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 934px; top: 575px; height: 105px;" data-name="Q2_B1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 984px; top: 575px; height: 105px;" data-name="Q3_B1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1034px; top: 575px; height: 105px;" data-name="Q4_B1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1084px; top: 575px; height: 105px;" data-name="Q5_B1_RETURN_575"></div>
+
+      <!-- BLOCO B2  -->
+      <div class="vertical-line line" style="left: 1254px; top: 149px; height: 33px;" data-name="LINE_B2_Q1_FEED"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 149px; height: 33px;" data-name="LINE_B2_Q2_FEED"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 149px; height: 33px;" data-name="LINE_B2_Q3_FEED"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 149px; height: 33px;" data-name="LINE_B2_Q4_FEED"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 149px; height: 33px;" data-name="LINE_B2_Q5_FEED"></div>
+      <div class="switch" style="left: 1240px; top: 180px;" data-name="Q1_CP4B2">
+         <div class="switch-label">Q1 CP4B2</div>
+      </div>
+      <div class="switch" style="left: 1290px; top: 180px;" data-name="Q2_CP4B2">
+         <div class="switch-label">Q2 CP4B2</div>
+      </div>
+      <div class="switch" style="left: 1340px; top: 180px;" data-name="Q3_CP4B2">
+         <div class="switch-label">Q3 CP4B2</div>
+      </div>
+      <div class="switch" style="left: 1390px; top: 180px;" data-name="Q4_CP4B2">
+         <div class="switch-label">Q4 CP4B2</div>
+      </div>
+      <div class="switch" style="left: 1440px; top: 180px;" data-name="Q5_CP4B2">
+         <div class="switch-label">Q5 CP4B2</div>
+      </div>
+      <div class="vertical-line line" style="left: 1254px; top: 195px; height: 22px;" data-name="Q1-4B2"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 195px; height: 22px;" data-name="Q2-4B2"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 195px; height: 22px;" data-name="Q3-4B2"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 195px; height: 22px;" data-name="Q4-4B2"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 195px; height: 22px;" data-name="Q5-4B2"></div>
+      <div class="capacitor" style="left: 1240px; top: 215px;" data-name="CAP_Q1-CP4B2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1290px; top: 215px;" data-name="CAP_Q2-CP4B2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1340px; top: 215px;" data-name="CAP_Q3-CP4B2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1390px; top: 215px;" data-name="CAP_Q4-CP4B2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1440px; top: 215px;" data-name="CAP_Q5-CP4B2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 1254px; top: 230px; height: 32px;" data-name="Q1-4B2.1"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 230px; height: 32px;" data-name="Q2-4B2.1"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 230px; height: 32px;" data-name="Q3-4B2.1"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 230px; height: 32px;" data-name="Q4-4B2.1"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 230px; height: 32px;" data-name="Q5-4B2.1"></div>
+      <div class="capacitor" style="left: 1240px; top: 260px;" data-name="CAP_Q1-CP3B2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1290px; top: 260px;" data-name="CAP_Q2-CP3B2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1340px; top: 260px;" data-name="CAP_Q3-CP3B2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1390px; top: 260px;" data-name="CAP_Q4-CP3B2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1440px; top: 260px;" data-name="CAP_Q5-CP3B2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 1254px; top: 275px; height: 32px;" data-name="Q1-4B2.2"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 275px; height: 32px;" data-name="Q2-4B2.2"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 275px; height: 32px;" data-name="Q3-4B2.2"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 275px; height: 32px;" data-name="Q4-4B2.2"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 275px; height: 32px;" data-name="Q5-4B2.2"></div>
+      <div class="switch" style="left: 1240px; top: 305px;" data-name="Q1_CP3B2">
+         <div class="switch-label">Q1 CP3B2</div>
+      </div>
+      <div class="switch" style="left: 1290px; top: 305px;" data-name="Q2_CP3B2">
+         <div class="switch-label">Q2 CP3B2</div>
+      </div>
+      <div class="switch" style="left: 1340px; top: 305px;" data-name="Q3_CP3B2">
+         <div class="switch-label">Q3 CP3B2</div>
+      </div>
+      <div class="switch" style="left: 1390px; top: 305px;" data-name="Q4_CP3B2">
+         <div class="switch-label">Q4 CP3B2</div>
+      </div>
+      <div class="switch" style="left: 1440px; top: 305px;" data-name="Q5_CP3B2">
+         <div class="switch-label">Q5 CP3B2</div>
+      </div>
+      <div class="vertical-line line" style="left: 1254px; top: 320px; height: 14px;" data-name="LINE_B2_Q1_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 320px; height: 14px;" data-name="LINE_B2_Q2_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 320px; height: 14px;" data-name="LINE_B2_Q3_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 320px; height: 14px;" data-name="LINE_B2_Q4_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 320px; height: 14px;" data-name="LINE_B2_Q5_TO_INTER"></div>
+      <div class="bus" style="left: 1204px; top: 332px; width: 270px;" data-name="BUS_B2_INTERMEDIATE"></div>
+      <div class="bus" style="left: 1225px; top: 417px; width: 317px;" data-name="BUS_B2_LOWER"></div>
+      <div class="vertical-line line" style="left: 1254px; top: 419px; height: 23px;" data-name="LINE_Q1_CP2B2"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 419px; height: 23px;" data-name="LINE_Q2_CP2B2"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 419px; height: 23px;" data-name="LINE_Q3_CP2B2"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 419px; height: 23px;" data-name="LINE_Q4_CP2B2"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 419px; height: 23px;" data-name="LINE_Q5_CP2B2"></div>
+      <div class="switch" style="left: 1240px; top: 440px;" data-name="Q1_CP2B2">
+         <div class="switch-label">Q1 CP2B2</div>
+      </div>
+      <div class="switch" style="left: 1290px; top: 440px;" data-name="Q2_CP2B2">
+         <div class="switch-label">Q2 CP2B2</div>
+      </div>
+      <div class="switch" style="left: 1340px; top: 440px;" data-name="Q3_CP2B2">
+         <div class="switch-label">Q3 CP2B2</div>
+      </div>
+      <div class="switch" style="left: 1390px; top: 440px;" data-name="Q4_CP2B2">
+         <div class="switch-label">Q4 CP2B2</div>
+      </div>
+      <div class="switch" style="left: 1440px; top: 440px;" data-name="Q5_CP2B2">
+         <div class="switch-label">Q5 CP2B2</div>
+      </div>
+      <div class="vertical-line line" style="left: 1254px; top: 455px; height: 17px;" data-name="Q1_CP2B2.1"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 455px; height: 17px;" data-name="Q2_CP2B2.1"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 455px; height: 17px;" data-name="Q3_CP2B2.1"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 455px; height: 17px;" data-name="Q4_CP2B2.1"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 455px; height: 17px;" data-name="Q5_CP2B2.1"></div>
+
+      <div class="vertical-line line" style="left: 1254px; top: 500px; height: 17px;" data-name="Q1_CP2B2.2"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 500px; height: 17px;" data-name="Q2_CP2B2.2"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 500px; height: 17px;" data-name="Q3_CP2B2.2"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 500px; height: 17px;" data-name="Q4_CP2B2.2"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 500px; height: 17px;" data-name="Q5_CP2B2.2"></div>
+
+      <div class="capacitor" style="left: 1240px; top: 470px;" data-name="CAP_Q1-CP2B2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1290px; top: 470px;" data-name="CAP_Q2-CP2B2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1340px; top: 470px;" data-name="CAP_Q3-CP2B2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1390px; top: 470px;" data-name="CAP_Q4-CP2B2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1440px; top: 470px;" data-name="CAP_Q5-CP2B2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 1254px; top: 485px; height: 19px;" data-name="Q1_B2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 485px; height: 19px;" data-name="Q2_B2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 485px; height: 19px;" data-name="Q3_B2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 485px; height: 19px;" data-name="Q4_B2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 485px; height: 19px;" data-name="Q5_B2_TO_COLLECTOR"></div>
+      <div class="horizontal-line line" style="left: 1254px; top: 502px; width: 287px;" data-name="COLLECTOR_LINE_B2"></div>
+      <div class="vertical-line line" style="left: 1539px; top: 501px; height: 121px;" data-name="TO_CS1B2"></div>
+
+
+      <div class="capacitor" style="left: 1240px; top: 515px;" data-name="CAP_Q1-CP1B2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1290px; top: 515px;" data-name="CAP_Q2-CP1B2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1340px; top: 515px;" data-name="CAP_Q3-CP1B2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1390px; top: 515px;" data-name="CAP_Q4-CP1B2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1440px; top: 515px;" data-name="CAP_Q5-CP1B2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 1254px; top: 530px; height: 32px;" data-name="Q1_CP1B2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 530px; height: 32px;" data-name="Q2_CP1B2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 530px; height: 32px;" data-name="Q3_CP1B2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 530px; height: 32px;" data-name="Q4_CP1B2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 530px; height: 32px;" data-name="Q5_CP1B2_LINE_530"></div>
+      <div class="switch" style="left: 1240px; top: 560px;" data-name="Q1_CP1B2">
+         <div class="switch-label">Q1 CP1B2</div>
+      </div>
+      <div class="switch" style="left: 1290px; top: 560px;" data-name="Q2_CP1B2">
+         <div class="switch-label">Q2 CP1B2</div>
+      </div>
+      <div class="switch" style="left: 1340px; top: 560px;" data-name="Q3_CP1B2">
+         <div class="switch-label">Q3 CP1B2</div>
+      </div>
+      <div class="switch" style="left: 1390px; top: 560px;" data-name="Q4_CP1B2">
+         <div class="switch-label">Q4 CP1B2</div>
+      </div>
+      <div class="switch" style="left: 1440px; top: 560px;" data-name="Q5_CP1B2">
+         <div class="switch-label">Q5 CP1B2</div>
+      </div>
+      <div class="vertical-line line" style="left: 1254px; top: 575px; height: 105px;" data-name="Q1_B2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1304px; top: 575px; height: 105px;" data-name="Q2_B2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 575px; height: 105px;" data-name="Q3_B2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1404px; top: 575px; height: 105px;" data-name="Q4_B2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1454px; top: 575px; height: 105px;" data-name="Q5_B2_RETURN_575"></div>
+
+      <!-- CHAVES E CONEXÕES FASE B  -->
+      <div class="switch yellow" style="left: 1155px; top: 620px;" data-name="CS1B1">
+         <div class="switch-label">CS1B1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1169px; top: 635px; height: 45px;" data-name="LINE_CS1B1"></div>
+      <div class="switch yellow" style="left: 1155px; top: 242.5px;" data-name="CS2B1">
+         <div class="switch-label">CS2B1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1169px; top: 149px; height: 95.5px;" data-name="LINE_CS2B1_FEED"></div>
+      <div class="vertical-line line" style="left: 1169px; top: 257.5px; height: 161.5px;" data-name="LINE_CS2B1_TO_BUS_B1_LOWER"></div>
+      <div class="switch yellow" style="left: 820px; top: 500px;" data-name="CS3B1">
+         <div class="switch-label">CS3B1</div>
+      </div>
+      <div class="vertical-line line" style="left: 834px; top: 334px; height: 168px;" data-name="LINE_CS3B1_CONTROL"></div>
+      <div class="vertical-line line" style="left: 834px; top: 515px; height: 165px;" data-name="RETORNO_834_515"></div>
+      <div class="switch yellow" style="left: 970px; top: 365px;" data-name="CS4B1">
+         <div class="switch-label">CS4B1</div>
+      </div>
+      <div class="vertical-line line" style="left: 984px; top: 334px; height: 33px;" data-name="L6_B1"></div>
+      <div class="vertical-line line" style="left: 984px; top: 380px; height: 40px;" data-name="L7_B1"></div>
+
+      <!-- CHAVES E CONEXÕES FASE B  -->
+      <div class="switch yellow" style="left: 1525px; top: 620px;" data-name="CS1B2">
+         <div class="switch-label">CS1B2</div>
+      </div>
+      <div class="vertical-line line" style="left: 1539px; top: 635px; height: 45px;" data-name="LINE_CS1B2"></div>
+      <div class="switch yellow" style="left: 1525px; top: 242.5px;" data-name="CS2B2">
+         <div class="switch-label">CS2B2</div>
+      </div>
+      <div class="vertical-line line" style="left: 1539px; top: 149px; height: 95.5px;" data-name="LINE_CS2B2_FEED"></div>
+      <div class="vertical-line line" style="left: 1539px; top: 257.5px; height: 161.5px;" data-name="LINE_CS2B2_TO_BUS_B2_LOWER"></div>
+      <div class="switch yellow" style="left: 1190px; top: 500px;" data-name="CS3B2">
+         <div class="switch-label">CS3B2</div>
+      </div>
+      <div class="vertical-line line" style="left: 1204px; top: 334px; height: 168px;" data-name="LINE_CS3B2_CONTROL"></div>
+      <div class="vertical-line line" style="left: 1204px; top: 515px; height: 165px;" data-name="RETORNO_1204_515"></div>
+      <div class="switch yellow" style="left: 1340px; top: 365px;" data-name="CS4B2">
+         <div class="switch-label">CS4B2</div>
+      </div>
+      <div class="vertical-line line" style="left: 1354px; top: 334px; height: 33px;" data-name="L6_B2"></div>
+      <div class="vertical-line line" style="left: 1354px; top: 380px; height: 40px;" data-name="L7_B2"></div>
+
+      <!-- =================================================================== -->
+      <!-- ============================ FASE C =============================== -->
+      <!-- =================================================================== -->
+      <div class="phase-label" style="left: 2023px; top: 80px;">FASE C</div>
+      <!-- Alimentação e Retorno FASE C -->
+      <div class="vertical-line line" style="left: 1984px; top: 100px; height: 49px;" data-name="CSC_MAIN_FEED"></div>
+      <div class="switch magenta" style="left: 1970px; top: 85px;" data-name="CSC">
+         <div class="switch-label">CSC</div>
+      </div>
+
+      <!-- SETA FONTE CSC - CENTRO EXATO DA CHAVE CSC -->
+      <div class="fonte-seta" style="left: 1985px; top: 50px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 15px solid red; cursor: pointer; transform: translateX(-50%);" data-name="FONTE_CSC" title="Fonte de Energia CSC - Clique para ligar/desligar">
+      </div>
+
+      <!-- LINHA DE CONEXÃO FONTE CSC → CHAVE CSC -->
+      <div class="connection-line" style="left: 1985px; top: 65px; width: 3px; height: 20px; background-color: #333;" data-name="CONEXAO_FONTE_CSC"></div>
+      <div class="vertical-line line" style="left: 1984px; top: 679px; height: 21px;" data-name="CS7C_CONNECTION"></div>
+
+      <!-- CHAVE CS6C - AGORA COM CLASSE "wye-switch" -->
+      <div class="switch wye-switch" style="left: 820px; top: 825px;" data-name="CS6C">
+         <div class="switch-label">CS6C</div>
+      </div>
+
+      <!-- Conexão CS6A para CS6C -->
+      <div class="horizontal-line line" style="left: 34px; top: 815px; width: 800px;" data-name="CS6A_TO_CS6C"></div>
+
+      <!-- Conexão CS6B para CS6C -->
+      <div class="horizontal-line line" style="left: 834px; top: 815px; width: 803px;" data-name="CS6B_TO_CS6C"></div>
+
+      <!-- Conexão do Barramento B para a junção do terra -->
+      <div class="vertical-line line" style="left: 834px; top: 678px; height: 150px;" data-name="CS6C_TO_VERTICAL"></div>
+
+      <!-- Conexão de CS6C ao símbolo de aterramento -->
+      <div class="vertical-line line" style="left: 835px; top: 840px; height: 40px;" data-name="CS6C_TO_GROUND"></div>
+      <div class="ground-symbol" style="left: 830px; top: 870px;">⏚</div>
+
+      <!-- CHAVE CS7C - AGORA COM CLASSE "delta-switch" -->
+      <div class="switch delta-switch" style="left: 1970px; top: 700px;" data-name="CS7C">
+         <div class="switch-label">CS7C</div>
+      </div>
+
+      <!-- BLOCO C1 -->
+      <div class="vertical-line line" style="left: 1684px; top: 149px; height: 33px;" data-name="LINE_C1_Q1_FEED"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 149px; height: 33px;" data-name="LINE_C1_Q2_FEED"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 149px; height: 33px;" data-name="LINE_C1_Q3_FEED"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 149px; height: 33px;" data-name="LINE_C1_Q4_FEED"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 149px; height: 33px;" data-name="LINE_C1_Q5_FEED"></div>
+      <div class="switch" style="left: 1670px; top: 180px;" data-name="Q1_CP4C1">
+         <div class="switch-label">Q1 CP4C1</div>
+      </div>
+      <div class="switch" style="left: 1720px; top: 180px;" data-name="Q2_CP4C1">
+         <div class="switch-label">Q2 CP4C1</div>
+      </div>
+      <div class="switch" style="left: 1770px; top: 180px;" data-name="Q3_CP4C1">
+         <div class="switch-label">Q3 CP4C1</div>
+      </div>
+      <div class="switch" style="left: 1820px; top: 180px;" data-name="Q4_CP4C1">
+         <div class="switch-label">Q4 CP4C1</div>
+      </div>
+      <div class="switch" style="left: 1870px; top: 180px;" data-name="Q5_CP4C1">
+         <div class="switch-label">Q5 CP4C1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1684px; top: 195px; height: 22px;" data-name="Q1-4C1"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 195px; height: 22px;" data-name="Q2-4C1"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 195px; height: 22px;" data-name="Q3-4C1"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 195px; height: 22px;" data-name="Q4-4C1"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 195px; height: 22px;" data-name="Q5-4C1"></div>
+      <div class="capacitor" style="left: 1670px; top: 215px;" data-name="CAP_Q1-CP4C1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1720px; top: 215px;" data-name="CAP_Q2-CP4C1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1770px; top: 215px;" data-name="CAP_Q3-CP4C1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1820px; top: 215px;" data-name="CAP_Q4-CP4C1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1870px; top: 215px;" data-name="CAP_Q5-CP4C1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 1684px; top: 230px; height: 32px;" data-name="Q1-4C1.1"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 230px; height: 32px;" data-name="Q2-4C1.1"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 230px; height: 32px;" data-name="Q3-4C1.1"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 230px; height: 32px;" data-name="Q4-4C1.1"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 230px; height: 32px;" data-name="Q5-4C1.1"></div>
+      <div class="capacitor" style="left: 1670px; top: 260px;" data-name="CAP_Q1-CP3C1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1720px; top: 260px;" data-name="CAP_Q2-CP3C1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1770px; top: 260px;" data-name="CAP_Q3-CP3C1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1820px; top: 260px;" data-name="CAP_Q4-CP3C1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1870px; top: 260px;" data-name="CAP_Q5-CP3C1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 1684px; top: 275px; height: 32px;" data-name="Q1-4C1.2"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 275px; height: 32px;" data-name="Q2-4C1.2"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 275px; height: 32px;" data-name="Q3-4C1.2"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 275px; height: 32px;" data-name="Q4-4C1.2"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 275px; height: 32px;" data-name="Q5-4C1.2"></div>
+      <div class="switch" style="left: 1670px; top: 305px;" data-name="Q1_CP3C1">
+         <div class="switch-label">Q1 CP3C1</div>
+      </div>
+      <div class="switch" style="left: 1720px; top: 305px;" data-name="Q2_CP3C1">
+         <div class="switch-label">Q2 CP3C1</div>
+      </div>
+      <div class="switch" style="left: 1770px; top: 305px;" data-name="Q3_CP3C1">
+         <div class="switch-label">Q3 CP3C1</div>
+      </div>
+      <div class="switch" style="left: 1820px; top: 305px;" data-name="Q4_CP3C1">
+         <div class="switch-label">Q4 CP4C1</div>
+      </div>
+      <div class="switch" style="left: 1870px; top: 305px;" data-name="Q5_CP3C1">
+         <div class="switch-label">Q5 CP3C1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1684px; top: 320px; height: 14px;" data-name="LINE_C1_Q1_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 320px; height: 14px;" data-name="LINE_C1_Q2_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 320px; height: 14px;" data-name="LINE_C1_Q3_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 320px; height: 14px;" data-name="LINE_C1_Q4_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 320px; height: 14px;" data-name="LINE_C1_Q5_TO_INTER"></div>
+      <div class="bus" style="left: 1634px; top: 332px; width: 270px;" data-name="BUS_C1_INTERMEDIATE"></div>
+      <div class="bus" style="left: 1655px; top: 417px; width: 317px;" data-name="BUS_C1_LOWER"></div>
+      <div class="vertical-line line" style="left: 1684px; top: 419px; height: 23px;" data-name="LINE_Q1_CP2C1"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 419px; height: 23px;" data-name="LINE_Q2_CP2C1"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 419px; height: 23px;" data-name="LINE_Q3_CP2C1"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 419px; height: 23px;" data-name="LINE_Q4_CP2C1"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 419px; height: 23px;" data-name="LINE_Q5_CP2C1"></div>
+      <div class="switch" style="left: 1670px; top: 440px;" data-name="Q1_CP2C1">
+         <div class="switch-label">Q1 CP2C1</div>
+      </div>
+      <div class="switch" style="left: 1720px; top: 440px;" data-name="Q2_CP2C1">
+         <div class="switch-label">Q2 CP2C1</div>
+      </div>
+      <div class="switch" style="left: 1770px; top: 440px;" data-name="Q3_CP2C1">
+         <div class="switch-label">Q3 CP2C1</div>
+      </div>
+      <div class="switch" style="left: 1820px; top: 440px;" data-name="Q4_CP2C1">
+         <div class="switch-label">Q4 CP2C1</div>
+      </div>
+      <div class="switch" style="left: 1870px; top: 440px;" data-name="Q5_CP2C1">
+         <div class="switch-label">Q5 CP2C1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1684px; top: 455px; height: 17px;" data-name="Q1_CP2C1.1"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 455px; height: 17px;" data-name="Q2_CP2C1.1"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 455px; height: 17px;" data-name="Q3_CP2C1.1"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 455px; height: 17px;" data-name="Q4_CP2C1.1"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 455px; height: 17px;" data-name="Q5_CP2C1.1"></div>
+
+      <div class="vertical-line line" style="left: 1684px; top: 500px; height: 17px;" data-name="Q1_CP2C1.2"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 500px; height: 17px;" data-name="Q2_CP2C1.2"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 500px; height: 17px;" data-name="Q3_CP2C1.2"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 500px; height: 17px;" data-name="Q4_CP2C1.2"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 500px; height: 17px;" data-name="Q5_CP2C1.2"></div>
+
+      <div class="capacitor" style="left: 1670px; top: 470px;" data-name="CAP_Q1-CP2C1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1720px; top: 470px;" data-name="CAP_Q2-CP2C1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1770px; top: 470px;" data-name="CAP_Q3-CP2C1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1820px; top: 470px;" data-name="CAP_Q4-CP2C1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1870px; top: 470px;" data-name="CAP_Q5-CP2C1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 1684px; top: 485px; height: 19px;" data-name="Q1_C1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 485px; height: 19px;" data-name="Q2_C1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 485px; height: 19px;" data-name="Q3_C1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 485px; height: 19px;" data-name="Q4_C1_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 485px; height: 19px;" data-name="Q5_C1_TO_COLLECTOR"></div>
+      <div class="horizontal-line line" style="left: 1684px; top: 502px; width: 287px;" data-name="COLLECTOR_LINE_C1"></div>
+      <div class="vertical-line line" style="left: 1969px; top: 501px; height: 121px;" data-name="TO_CS1C1"></div>
+
+
+      <div class="capacitor" style="left: 1670px; top: 515px;" data-name="CAP_Q1-CP1C1">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1720px; top: 515px;" data-name="CAP_Q2-CP1C1">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1770px; top: 515px;" data-name="CAP_Q3-CP1C1">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1820px; top: 515px;" data-name="CAP_Q4-CP1C1">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 1870px; top: 515px;" data-name="CAP_Q5-CP1C1">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 1684px; top: 530px; height: 32px;" data-name="Q1_CP1C1_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 530px; height: 32px;" data-name="Q2_CP1C1_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 530px; height: 32px;" data-name="Q3_CP1C1_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 530px; height: 32px;" data-name="Q4_CP1C1_LINE_530"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 530px; height: 32px;" data-name="Q5_CP1C1_LINE_530"></div>
+      <div class="switch" style="left: 1670px; top: 560px;" data-name="Q1_CP1C1">
+         <div class="switch-label">Q1 CP1C1</div>
+      </div>
+      <div class="switch" style="left: 1720px; top: 560px;" data-name="Q2_CP1C1">
+         <div class="switch-label">Q2 CP1C1</div>
+      </div>
+      <div class="switch" style="left: 1770px; top: 560px;" data-name="Q3_CP1C1">
+         <div class="switch-label">Q3 CP1C1</div>
+      </div>
+      <div class="switch" style="left: 1820px; top: 560px;" data-name="Q4_CP1C1">
+         <div class="switch-label">Q4 CP1C1</div>
+      </div>
+      <div class="switch" style="left: 1870px; top: 560px;" data-name="Q5_CP1C1">
+         <div class="switch-label">Q5 CP1C1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1684px; top: 575px; height: 105px;" data-name="Q1_C1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1734px; top: 575px; height: 105px;" data-name="Q2_C1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 575px; height: 105px;" data-name="Q3_C1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1834px; top: 575px; height: 105px;" data-name="Q4_C1_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 1884px; top: 575px; height: 105px;" data-name="Q5_C1_RETURN_575"></div>
+
+      <!-- BLOCO C2 -->
+      <div class="vertical-line line" style="left: 2054px; top: 149px; height: 33px;" data-name="LINE_C2_Q1_FEED"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 149px; height: 33px;" data-name="LINE_C2_Q2_FEED"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 149px; height: 33px;" data-name="LINE_C2_Q3_FEED"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 149px; height: 33px;" data-name="LINE_C2_Q4_FEED"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 149px; height: 33px;" data-name="LINE_C2_Q5_FEED"></div>
+      <div class="switch" style="left: 2040px; top: 180px;" data-name="Q1_CP4C2">
+         <div class="switch-label">Q1 CP4C2</div>
+      </div>
+      <div class="switch" style="left: 2090px; top: 180px;" data-name="Q2_CP4C2">
+         <div class="switch-label">Q2 CP4C2</div>
+      </div>
+      <div class="switch" style="left: 2140px; top: 180px;" data-name="Q3_CP4C2">
+         <div class="switch-label">Q3 CP4C2</div>
+      </div>
+      <div class="switch" style="left: 2190px; top: 180px;" data-name="Q4_CP4C2">
+         <div class="switch-label">Q4 CP4C2</div>
+      </div>
+      <div class="switch" style="left: 2240px; top: 180px;" data-name="Q5_CP4C2">
+         <div class="switch-label">Q5 CP4C2</div>
+      </div>
+      <div class="vertical-line line" style="left: 2054px; top: 195px; height: 22px;" data-name="Q1-4C2"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 195px; height: 22px;" data-name="Q2-4C2"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 195px; height: 22px;" data-name="Q3-4C2"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 195px; height: 22px;" data-name="Q4-4C2"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 195px; height: 22px;" data-name="Q5-4C2"></div>
+      <div class="capacitor" style="left: 2040px; top: 215px;" data-name="CAP_Q1-CP4C2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2090px; top: 215px;" data-name="CAP_Q2-CP4C2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2140px; top: 215px;" data-name="CAP_Q3-CP4C2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2190px; top: 215px;" data-name="CAP_Q4-CP4C2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2240px; top: 215px;" data-name="CAP_Q5-CP4C2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 2054px; top: 230px; height: 32px;" data-name="Q1-4C2.1"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 230px; height: 32px;" data-name="Q2-4C2.1"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 230px; height: 32px;" data-name="Q3-4C2.1"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 230px; height: 32px;" data-name="Q4-4C2.1"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 230px; height: 32px;" data-name="Q5-4C2.1"></div>
+      <div class="capacitor" style="left: 2040px; top: 260px;" data-name="CAP_Q1-CP3C2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2090px; top: 260px;" data-name="CAP_Q2-CP3C2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2140px; top: 260px;" data-name="CAP_Q3-CP3C2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2190px; top: 260px;" data-name="CAP_Q4-CP3C2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2240px; top: 260px;" data-name="CAP_Q5-CP3C2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 2054px; top: 275px; height: 32px;" data-name="Q1-4C2.2"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 275px; height: 32px;" data-name="Q2-4C2.2"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 275px; height: 32px;" data-name="Q3-4C2.2"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 275px; height: 32px;" data-name="Q4-4C2.2"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 275px; height: 32px;" data-name="Q5-4C2.2"></div>
+      <div class="switch" style="left: 2040px; top: 305px;" data-name="Q1_CP3C2">
+         <div class="switch-label">Q1 CP3C2</div>
+      </div>
+      <div class="switch" style="left: 2090px; top: 305px;" data-name="Q2_CP3C2">
+         <div class="switch-label">Q2 CP3C2</div>
+      </div>
+      <div class="switch" style="left: 2140px; top: 305px;" data-name="Q3_CP3C2">
+         <div class="switch-label">Q3 CP3C2</div>
+      </div>
+      <div class="switch" style="left: 2190px; top: 305px;" data-name="Q4_CP3C2">
+         <div class="switch-label">Q4 CP3C2</div>
+      </div>
+      <div class="switch" style="left: 2240px; top: 305px;" data-name="Q5_CP3C2">
+         <div class="switch-label">Q5 CP3C2</div>
+      </div>
+      <div class="vertical-line line" style="left: 2054px; top: 320px; height: 14px;" data-name="LINE_C2_Q1_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 320px; height: 14px;" data-name="LINE_C2_Q2_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 320px; height: 14px;" data-name="LINE_C2_Q3_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 320px; height: 14px;" data-name="LINE_C2_Q4_TO_INTER"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 320px; height: 14px;" data-name="LINE_C2_Q5_TO_INTER"></div>
+      <div class="bus" style="left: 2004px; top: 332px; width: 270px;" data-name="BUS_C2_INTERMEDIATE"></div>
+      <div class="bus" style="left: 2025px; top: 417px; width: 317px;" data-name="BUS_C2_LOWER"></div>
+      <div class="vertical-line line" style="left: 2054px; top: 419px; height: 23px;" data-name="LINE_Q1_CP2C2"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 419px; height: 23px;" data-name="LINE_Q2_CP2C2"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 419px; height: 23px;" data-name="LINE_Q3_CP2C2"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 419px; height: 23px;" data-name="LINE_Q4_CP2C2"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 419px; height: 23px;" data-name="LINE_Q5_CP2C2"></div>
+      <div class="switch" style="left: 2040px; top: 440px;" data-name="Q1_CP2C2">
+         <div class="switch-label">Q1 CP2C2</div>
+      </div>
+      <div class="switch" style="left: 2090px; top: 440px;" data-name="Q2_CP2C2">
+         <div class="switch-label">Q2 CP2C2</div>
+      </div>
+      <div class="switch" style="left: 2140px; top: 440px;" data-name="Q3_CP2C2">
+         <div class="switch-label">Q3 CP2C2</div>
+      </div>
+      <div class="switch" style="left: 2190px; top: 440px;" data-name="Q4_CP2C2">
+         <div class="switch-label">Q4 CP2C2</div>
+      </div>
+      <div class="switch" style="left: 2240px; top: 440px;" data-name="Q5_CP2C2">
+         <div class="switch-label">Q5 CP2C2</div>
+      </div>
+      <div class="vertical-line line" style="left: 2054px; top: 455px; height: 17px;" data-name="Q1_CP2C2.1"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 455px; height: 17px;" data-name="Q2_CP2C2.1"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 455px; height: 17px;" data-name="Q3_CP2C2.1"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 455px; height: 17px;" data-name="Q4_CP2C2.1"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 455px; height: 17px;" data-name="Q5_CP2C2.1"></div>
+      <div class="capacitor" style="left: 2040px; top: 470px;" data-name="CAP_Q1-CP2C2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2090px; top: 470px;" data-name="CAP_Q2-CP2C2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2140px; top: 470px;" data-name="CAP_Q3-CP2C2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2190px; top: 470px;" data-name="CAP_Q4-CP2C2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2240px; top: 470px;" data-name="CAP_Q5-CP2C2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 2054px; top: 485px; height: 19px;" data-name="Q1_C2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 485px; height: 19px;" data-name="Q2_C2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 485px; height: 19px;" data-name="Q3_C2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 485px; height: 19px;" data-name="Q4_C2_TO_COLLECTOR"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 485px; height: 19px;" data-name="Q5_C2_TO_COLLECTOR"></div>
+
+      <div class="vertical-line line" style="left: 2054px; top: 500px; height: 19px;" data-name="Q1_CP2C2.2"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 500px; height: 19px;" data-name="Q2_CP2C2.2"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 500px; height: 19px;" data-name="Q3_CP2C2.2"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 500px; height: 19px;" data-name="Q4_CP2C2.2"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 500px; height: 19px;" data-name="Q5_CP2C2.2"></div>
+
+
+      <div class="horizontal-line line" style="left: 2054px; top: 502px; width: 287px;" data-name="COLLECTOR_LINE_C2"></div>
+      <div class="vertical-line line" style="left: 2339px; top: 501px; height: 121px;" data-name="TO_CS1C2"></div>
+
+      <div class="capacitor" style="left: 2040px; top: 515px;" data-name="CAP_Q1-CP1C2">
+         <div class="capacitor-label">100KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2090px; top: 515px;" data-name="CAP_Q2-CP1C2">
+         <div class="capacitor-label">200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2140px; top: 515px;" data-name="CAP_Q3-CP1C2">
+         <div class="capacitor-label">800KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2190px; top: 515px;" data-name="CAP_Q4-CP1C2">
+         <div class="capacitor-label">1200KVAr</div>
+      </div>
+      <div class="capacitor" style="left: 2240px; top: 515px;" data-name="CAP_Q5-CP1C2">
+         <div class="capacitor-label">1600KVAr</div>
+      </div>
+      <div class="vertical-line line" style="left: 2054px; top: 530px; height: 32px;" data-name="Q1_CP1C2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 530px; height: 32px;" data-name="Q2_CP1C2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 530px; height: 32px;" data-name="Q3_CP1C2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 530px; height: 32px;" data-name="Q4_CP1C2_LINE_530"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 530px; height: 32px;" data-name="Q5_CP1C2_LINE_530"></div>
+      <div class="switch" style="left: 2040px; top: 560px;" data-name="Q1_CP1C2">
+         <div class="switch-label">Q1 CP1C2</div>
+      </div>
+      <div class="switch" style="left: 2090px; top: 560px;" data-name="Q2_CP1C2">
+         <div class="switch-label">Q2 CP1C2</div>
+      </div>
+      <div class="switch" style="left: 2140px; top: 560px;" data-name="Q3_CP1C2">
+         <div class="switch-label">Q3 CP1C2</div>
+      </div>
+      <div class="switch" style="left: 2190px; top: 560px;" data-name="Q4_CP1C2">
+         <div class="switch-label">Q4 CP1C2</div>
+      </div>
+      <div class="switch" style="left: 2240px; top: 560px;" data-name="Q5_CP1C2">
+         <div class="switch-label">Q5 CP1C2</div>
+      </div>
+      <div class="vertical-line line" style="left: 2054px; top: 575px; height: 105px;" data-name="Q1_C2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 2104px; top: 575px; height: 105px;" data-name="Q2_C2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 575px; height: 105px;" data-name="Q3_C2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 2204px; top: 575px; height: 105px;" data-name="Q4_C2_RETURN_575"></div>
+      <div class="vertical-line line" style="left: 2254px; top: 575px; height: 105px;" data-name="Q5_C2_RETURN_575"></div>
+
+      <!-- CHAVES E CONEXÕES FASE C (BLOCO 1) -->
+      <div class="switch yellow" style="left: 1955px; top: 620px;" data-name="CS1C1">
+         <div class="switch-label">CS1C1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1969px; top: 635px; height: 45px;" data-name="LINE_CS1C1"></div>
+      <div class="switch yellow" style="left: 1955px; top: 242.5px;" data-name="CS2C1">
+         <div class="switch-label">CS2C1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1969px; top: 149px; height: 95.5px;" data-name="LINE_CS2C1_FEED"></div>
+      <div class="vertical-line line" style="left: 1969px; top: 257.5px; height: 161.5px;" data-name="LINE_CS2C1_TO_BUS_C1_LOWER"></div>
+      <div class="switch yellow" style="left: 1620px; top: 500px;" data-name="CS3C1">
+         <div class="switch-label">CS3C1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1634px; top: 334px; height: 168px;" data-name="LINE_CS3C1_CONTROL"></div>
+      <div class="vertical-line line" style="left: 1634px; top: 515px; height: 165px;" data-name="RETORNO_1634_515"></div>
+      <div class="switch yellow" style="left: 1770px; top: 365px;" data-name="CS4C1">
+         <div class="switch-label">CS4C1</div>
+      </div>
+      <div class="vertical-line line" style="left: 1784px; top: 334px; height: 33px;" data-name="L6_C1"></div>
+      <div class="vertical-line line" style="left: 1784px; top: 380px; height: 40px;" data-name="L7_C1"></div>
+
+      <!-- CHAVES E CONEXÕES FASE C (BLOCO 2) -->
+      <div class="switch yellow" style="left: 2325px; top: 620px;" data-name="CS1C2">
+         <div class="switch-label">CS1C2</div>
+      </div>
+      <div class="vertical-line line" style="left: 2339px; top: 635px; height: 45px;" data-name="LINE_CS1C2"></div>
+      <div class="switch yellow" style="left: 2325px; top: 242.5px;" data-name="CS2C2">
+         <div class="switch-label">CS2C2</div>
+      </div>
+      <div class="vertical-line line" style="left: 2339px; top: 149px; height: 95.5px;" data-name="LINE_CS2C2_FEED"></div>
+      <div class="vertical-line line" style="left: 2339px; top: 257.5px; height: 161.5px;" data-name="LINE_CS2C2_TO_BUS_C2_LOWER">
+      </div>
+      <div class="switch yellow" style="left: 1990px; top: 500px;" data-name="CS3C2">
+         <div class="switch-label">CS3C2</div>
+      </div>
+      <div class="vertical-line line" style="left: 2004px; top: 334px; height: 168px;" data-name="LINE_CS3C2_CONTROL"></div>
+      <div class="vertical-line line" style="left: 2004px; top: 515px; height: 165px;" data-name="RETORNO_2004_515"></div>
+      <div class="switch yellow" style="left: 2140px; top: 365px;" data-name="CS4C2">
+         <div class="switch-label">CS4C2</div>
+      </div>
+      <div class="vertical-line line" style="left: 2154px; top: 334px; height: 33px;" data-name="L6_C2"></div>
+      <div class="vertical-line line" style="left: 2154px; top: 380px; height: 40px;" data-name="L7_C2"></div>
+
+      <!-- FIM DO DIAGRAMA -->
+
+   </div> <!-- Fim do diagram-container -->
+
+
+   <!-- Legenda do Rodapé -->
+   <div id="footer-legend">
+      <span class="legend-title">LEGENDA:</span>
+      <div class="legend-group">
+         <span class="legend-label">CS:</span>
+         <div class="legend-item"><div class="legend-switch magenta"></div>Principais</div>
+         <div class="legend-item"><div class="legend-switch yellow"></div>Manobra</div>
+         <div class="legend-item"><div class="legend-switch delta-switch"></div>Delta</div>
+         <div class="legend-item"><div class="legend-switch wye-switch"></div>Wye</div>
+      </div>
+      <div class="legend-separator">|</div>
+      <div class="legend-group">
+         <span class="legend-label">Q:</span>
+         <div class="legend-item"><div class="legend-switch phase-a"></div>Fase A</div>
+         <div class="legend-item"><div class="legend-switch phase-b"></div>Fase B</div>
+         <div class="legend-item"><div class="legend-switch phase-c"></div>Fase C</div>
+      </div>
+      <div class="legend-separator">|</div>
+      <div class="legend-group">
+         <span class="legend-label">Estados:</span>
+         <div class="legend-item"><div class="legend-line off"></div>Desenergizado</div>
+         <div class="legend-item"><div class="legend-line potential"></div>Energizado</div>
+         <div class="legend-item"><div class="legend-line active-flow"></div>Fluxo Ativo</div>
+      </div>
+   </div>
+
+   <script src="bank-selector.js"></script>
+   <script src="script.js"></script>
+
+</body>
+
+</html>

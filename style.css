@@ -1,0 +1,485 @@
+/* ======================================================= */
+/* DIAGRAMA UNIFILAR - SISTEMA DE CONTROLE DE CAPACITORES  */
+/* Layout Aprimorado V3.1 + Cores Originais V2.14         */
+/* ======================================================= */
+
+/* --- Paleta de Cores com Padrão Brasileiro (R/S/T) --- */
+:root {
+    /* Cores de Estado do Circuito */
+    --color-off: rgba(141, 153, 174, 0.4);             /* Cinza Claro: Desenergizado */
+    --color-potential: rgba(252, 163, 17, 0.5);        /* Laranja Claro: Energizado (sem corrente) */
+    --color-phase-a: rgba(231, 76, 60, 0.6);           /* Vermelho Claro: Fase A (para elementos não ativos) */
+    --color-phase-b: rgba(25, 135, 84, 0.6);           /* Verde Claro: Fase B (para elementos não ativos) */
+    --color-phase-c: rgba(13, 110, 253, 0.6);          /* Azul Claro: Fase C (para elementos não ativos) */
+    --color-danger: rgba(220, 53, 69, 0.7);            /* Vermelho Claro (para Curto-Circuito) */
+
+    /* Cores intensas para elementos ativos (definidas diretamente no CSS) */
+    --color-phase-a-active: #E74C3C;                   /* Vermelho INTENSO: Fase A ativa */
+    --color-phase-b-active: #198754;                   /* Verde INTENSO: Fase B ativa */
+    --color-phase-c-active: #0d6efd;                   /* Azul INTENSO: Fase C ativa */
+
+    /* Cores das Chaves (conforme legenda e função) - VERSÃO LEVE */
+    --color-chave-principal: rgba(214, 51, 132, 0.5);   /* Magenta Claro */
+    --color-chave-manobra: rgba(252, 163, 17, 0.5);     /* Laranja Claro */
+    --color-chave-delta: rgba(0, 255, 0, 0.6);          /* Verde Claro - CS7 */
+    --color-chave-wye: rgba(26, 188, 156, 0.5);         /* Turquesa Claro */
+    
+    /* Cores da UI - VERSÃO LEVE */
+    --color-ui-primary: rgba(13, 110, 253, 0.7);       /* Azul Claro para botões e foco */
+    --color-background: rgba(237, 242, 244, 0.8);
+    --color-panel-background: rgba(255, 255, 255, 0.9);
+    --color-text-dark: rgba(43, 45, 66, 0.8);
+    --color-border-light: rgba(222, 226, 230, 0.6);
+
+    /* Variáveis de Layout */
+    --transition-smooth: 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    --border-radius-md: 0.5rem;
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* --- ESTILOS GERAIS E FUNDO --- */
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Consolas&display=swap');
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-background);
+    overflow: hidden;
+    color: var(--color-text-dark);
+}
+
+/* --- CONTAINER DO DIAGRAMA --- */
+#diagram-container {
+    position: absolute;
+    transform-origin: top left;
+    width: 2400px;
+    height: 900px;
+    cursor: grab;
+    top: 80px; /* Ajustado para dar espaço ao título */
+    left: 385px; /* Ajustado para dar espaço ao painel */
+    transition: left var(--transition-smooth);
+}
+
+body:has(#diagram-container:active) {
+    cursor: grabbing;
+}
+
+/* --- COMPONENTES PADRÃO --- */
+.bus,
+.vertical-line,
+.horizontal-line,
+.connection-line,
+.connection-dot {
+    background-color: var(--color-off);
+    position: absolute;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0.7; /* Tornar linhas mais transparentes */
+}
+
+.bus { height: 5px; z-index: 1; border-radius: 2.5px; }
+.vertical-line { width: 5px; z-index: 2; }
+.horizontal-line { height: 5px; z-index: 1; }
+
+/* ======================================================= */
+/* ESTADOS VISUAIS DO CIRCUITO (CORES ORIGINAIS BR)        */
+/* ======================================================= */
+@keyframes flow-horizontal { to { background-position: -200px 0; } }
+@keyframes flow-vertical { to { background-position: 0 -200px; } }
+@keyframes interphase-pulse {
+    0% { filter: brightness(1.1); }
+    50% { filter: brightness(1.5); box-shadow: 0 0 8px var(--color-danger); }
+    100% { filter: brightness(1.1); }
+}
+
+.has-potential {
+    background-color: var(--color-potential) !important;
+    opacity: 0.8; /* Mais transparente quando apenas energizado */
+}
+.is-active-a {
+    background-color: #E74C3C !important; /* COR INTENSA: Vermelho forte quando ativo */
+    opacity: 1.0; /* Opacidade total para fluxo ativo */
+}
+.is-active-b {
+    background-color: #198754 !important; /* COR INTENSA: Verde forte quando ativo */
+    opacity: 1.0; /* Opacidade total para fluxo ativo */
+}
+.is-active-c {
+    background-color: #0d6efd !important; /* COR INTENSA: Azul forte quando ativo */
+    opacity: 1.0; /* Opacidade total para fluxo ativo */
+}
+
+.interphase-flow {
+    background-color: var(--color-danger) !important;
+    background-image: none !important;
+    animation: interphase-pulse 0.8s ease-in-out infinite !important;
+}
+
+.line.animated-flow, .bus.animated-flow {
+    background-image: linear-gradient(to right, transparent, transparent 45%, rgba(255,255,255,0.7) 50%, transparent 55%, transparent) !important;
+    background-size: 200px 100% !important;
+    animation: flow-horizontal 2s linear infinite;
+}
+.vertical-line.animated-flow {
+     background-image: linear-gradient(to bottom, transparent, transparent 45%, rgba(255,255,255,0.7) 50%, transparent 55%, transparent) !important;
+     background-size: 100% 200px !important;
+     animation-name: flow-vertical;
+}
+
+/* ======================================================= */
+/* ESTILOS DE COMPONENTES DO DIAGRAMA (CORES ORIGINAIS)    */
+/* ======================================================= */
+.switch {
+    position: absolute; width: 32px; height: 20px; background-color: #fff;
+    border: 2px solid #adb5bd; border-radius: 3px; cursor: pointer; z-index: 10;
+    transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-image: linear-gradient(45deg, transparent 45%, var(--color-off) 48%, var(--color-off) 52%, transparent 55%);
+}
+.switch.closed {
+    background-image: linear-gradient(90deg, transparent 45%, var(--color-text-dark) 45%, var(--color-text-dark) 55%, transparent 55%);
+    border-color: var(--color-text-dark);
+}
+.switch:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+.switch-label {
+    position: absolute; font-size: 9px; font-weight: 700; color: #000000;
+    white-space: normal; left: 60%; top: -60%; transform: translateY(-50%);
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8); /* Sombra branca para melhor legibilidade */
+    text-align: center; line-height: 1.1; /* Para quebras de linha */
+}
+.capacitor {
+    position: absolute; width: 48px; height: 24px; background-color: #f8f9fa;
+    border: 1px solid #ced4da; border-radius: 2px; transition: all 0.2s ease;
+    box-sizing: border-box; cursor: default; z-index: 4;
+}
+.capacitor-label {
+    font-size: 9px; font-weight: 800; color: #000000; position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    white-space: normal; width: 100%; text-align: center; line-height: 1.1;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.9); /* Sombra branca para melhor legibilidade */
+}
+
+/* CORREÇÃO: Coloração de Chaves CS por função (corrigido) */
+.switch.magenta { border-color: var(--color-chave-principal); } /* CSA, B, C */
+.switch.yellow { border-color: var(--color-chave-manobra); }   /* CS1-4 */
+.switch.delta-switch { border-color: var(--color-chave-delta); } /* CS7 */
+.switch.wye-switch { border-color: var(--color-chave-wye); }     /* CS6 */
+
+/* CORREÇÃO: Coloração de Chaves Q por fase (estático) */
+.switch.phase-a { border-color: var(--color-phase-a); }
+.switch.phase-b { border-color: var(--color-phase-b); }
+.switch.phase-c { border-color: var(--color-phase-c); }
+
+/* Coloração de Componentes por estado dinâmico - CORES INTENSAS PARA ATIVOS */
+.switch.has-potential, .capacitor.has-potential { border-color: var(--color-potential) !important; }
+.capacitor.has-potential { background-color: rgba(255, 251, 235, 0.3); }
+
+/* CORES INTENSAS para elementos com fluxo ativo */
+.switch.is-active-a, .capacitor.is-active-a { border-color: #E74C3C !important; border-width: 3px !important; }
+.capacitor.is-active-a { background-color: rgba(231, 76, 60, 0.2); }
+.switch.is-active-b, .capacitor.is-active-b { border-color: #198754 !important; border-width: 3px !important; }
+.capacitor.is-active-b { background-color: rgba(25, 135, 84, 0.2); }
+.switch.is-active-c, .capacitor.is-active-c { border-color: #0d6efd !important; border-width: 3px !important; }
+.capacitor.is-active-c { background-color: rgba(13, 110, 253, 0.2); }
+
+.switch.interphase-flow, .capacitor.interphase-flow { border-color: #dc3545 !important; border-width: 4px !important; }
+.capacitor.interphase-flow { background-color: rgba(220, 53, 69, 0.3); }
+.capacitor.interphase-flow .capacitor-label { color: #dc3545; font-weight: 900; }
+
+.fonte-seta {
+    position: absolute; z-index: 10; transition: all 0.3s; cursor: pointer;
+    border-bottom-color: var(--color-off) !important;
+}
+.fonte-seta:hover { filter: brightness(1.3); }
+.fonte-seta.closed { /* Nome da classe JS foi alterado, mas o efeito é o mesmo */
+    border-bottom-color: #28a745 !important;
+    filter: drop-shadow(0 0 8px #28a745);
+}
+.no-connection-symbol {
+    position: absolute; width: 8px; height: 4px; border: 2px solid var(--color-off);
+    border-bottom: none; border-radius: 8px 8px 0 0; background-color: var(--color-background);
+    z-index: 10;
+}
+.phase-label {
+    position: absolute; font-weight: 900; font-size: 18px; color: #000000;
+    text-transform: uppercase; letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9); /* Sombra branca para melhor legibilidade */
+}
+.ground-symbol { position: absolute; font-size: 20px; color: var(--color-text-dark); z-index: 10; }
+
+/* ======================================================= */
+/* PAINÉIS DE INTERFACE (LAYOUT CORRIGIDO)                 */
+/* ======================================================= */
+
+/* --- Painel Esquerdo Superior (Logo) --- */
+#logo-container {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 2001; /* Acima do painel de config */
+    background: var(--color-panel-background);
+    padding: 10px;
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+#logo-image { height: 50px; display: block; }
+
+/* --- Título Dinâmico --- */
+#dynamic-title {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2001;
+    background: var(--color-panel-background);
+    padding: 15px 20px;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text-dark);
+    text-align: center;
+    white-space: nowrap;
+    border: 2px solid var(--color-ui-primary);
+    min-width: 400px;
+    transition: all var(--transition-smooth);
+}
+
+/* --- Legenda do Rodapé --- */
+#footer-legend {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%) scale(1.3);
+    z-index: 2001;
+    background: var(--color-panel-background);
+    padding: 8px 20px;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--color-text-dark);
+    border: 2px solid var(--color-ui-primary);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.legend-title {
+    font-weight: 700;
+    color: var(--color-ui-primary);
+    margin-right: 5px;
+}
+
+.legend-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-label {
+    font-weight: 600;
+    color: var(--color-text-dark);
+    margin-right: 3px;
+}
+
+.legend-separator {
+    color: var(--color-border-light);
+    font-weight: 300;
+    font-size: 14px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.legend-switch {
+    width: 14px;
+    height: 8px;
+    border: 1.5px solid;
+    border-radius: 1px;
+    background-color: #fff;
+    flex-shrink: 0;
+}
+
+.legend-line {
+    width: 14px;
+    height: 3px;
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+/* Cores da legenda - Chaves */
+.legend-switch.magenta { border-color: var(--color-chave-principal); }
+.legend-switch.yellow { border-color: var(--color-chave-manobra); }
+.legend-switch.delta-switch { border-color: var(--color-chave-delta); }
+.legend-switch.wye-switch { border-color: var(--color-chave-wye); }
+.legend-switch.phase-a { border-color: var(--color-phase-a); }
+.legend-switch.phase-b { border-color: var(--color-phase-b); }
+.legend-switch.phase-c { border-color: var(--color-phase-c); }
+
+/* Cores da legenda - Estados */
+.legend-line.off { background-color: var(--color-off); }
+.legend-line.potential { background-color: var(--color-potential); }
+.legend-line.active-flow {
+    background: linear-gradient(90deg, var(--color-phase-a), var(--color-phase-b), var(--color-phase-c));
+    animation: flow-horizontal 2s linear infinite;
+}
+
+/* --- Painel Esquerdo Principal (Configurações) --- */
+#config-panel {
+    position: fixed;
+    top: 95px; /* CORRIGIDO: Posicionado abaixo da logo */
+    left: 15px;
+    bottom: 15px;
+    width: 340px;
+    background: var(--color-panel-background);
+    border-right: 2px solid var(--color-ui-primary);
+    padding: 15px 20px;
+    z-index: 2000;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 12px;
+    overflow-y: auto;
+    transition: transform var(--transition-smooth), opacity var(--transition-smooth);
+}
+#config-panel.minimized {
+    transform: translateX(calc(-100% - 30px));
+    opacity: 0;
+    pointer-events: none;
+}
+.minimize-button {
+    position: fixed;
+    top: 105px; /* Alinhado com o painel */
+    left: 370px; 
+    background: var(--color-ui-primary);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.minimize-button:hover { background: #0b5ed7; }
+body:has(#config-panel.minimized) .minimize-button { left: 25px; }
+
+/* --- Painel Direito (Display de Potência) --- */
+#total-power-display {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    z-index: 2000;
+    background: var(--color-panel-background);
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-text-dark);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border-light);
+}
+
+body:has(#config-panel.minimized) #diagram-container { left: 80px; }
+
+/* --- Estilos Internos dos Painéis (Cores Originais) --- */
+.panel-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+#config-panel h3 {
+    margin: 0 0 3px 0; color: var(--color-text-dark); font-size: 12px;
+    font-weight: 600; text-transform: uppercase; border-bottom: 2px solid var(--color-border-light);
+    padding-bottom: 8px;
+}
+.config-row { display: flex; flex-direction: column; gap: 5px; }
+.config-row label { font-weight: 600; color: #495057; font-size: 12px; }
+.config-row select, .config-row input {
+    padding: 8px 9px; border: 1px solid var(--color-border-light); border-radius: 4px;
+    font-size: 12px; background: #f8f9fa; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.config-row select:focus, .config-row input:focus {
+    outline: none; border-color: var(--color-ui-primary); box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+}
+.action-button {
+    padding: 8px 12px; background: var(--color-ui-primary);
+    color: white; border: none; border-radius: 4px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease; margin-top: 5px; width: 100%;
+}
+.action-button:hover {
+    background: #0b5ed7; transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.action-button:active { transform: translateY(0); }
+.calc-button {
+    padding: 10px 12px; background: var(--color-ui-primary); color: white; border: none;
+    border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer;
+    transition: all 0.2s ease; text-transform: uppercase; margin-top: auto;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.calc-button:hover { background: #0b5ed7; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3); }
+#circuit-results, #diagram-status-display, #legend {
+    background: #f8f9fa; border: 1px solid var(--color-border-light); border-radius: 4px;
+    padding: 12px; min-height: 60px; font-size: 12px;
+    color: #495057; line-height: 1.5; flex-grow: 1;
+}
+#circuit-results table { font-size: 12px; }
+#circuit-results tr.applied-config { background-color: #d1e7dd !important; border-left: 4px solid #0f5132; }
+#circuit-results tr.applied-config td { font-weight: bold; color: #0f5132; }
+.apply-button {
+    font-size: 12px; padding: 4px 8px; cursor: pointer; border-radius: 4px;
+    border: 1px solid var(--color-ui-primary); background: #eaf2ff; color: var(--color-ui-primary);
+    font-weight: bold; transition: all 0.2s ease;
+}
+.apply-button:hover { background: var(--color-ui-primary); color: white; transform: scale(1.05); }
+
+.status-table { 
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.status-table td { padding: 5px 6px; border-bottom: 1px solid #f0f2f5; vertical-align: middle; }
+.status-table tr:last-child td { border-bottom: none; }
+.status-table td:first-child { font-weight: 600; color: #495057; width: 60%; }
+.status-table td:last-child { text-align: right; font-family: 'Consolas', 'Courier New', monospace; font-weight: normal; }
+.status-warning { color: #f39c12; font-weight: bold !important; }
+.status-danger { color: var(--color-danger); font-weight: bold !important; }
+.status-columns-container { display: flex; gap: 15px; width: 100%; }
+.status-column { flex: 1; min-width: 0; }
+
+/* LEGENDA NO PAINEL */
+#legend ul { list-style: none; padding: 0; margin: 0; }
+#legend li { display: flex; align-items: center; margin-bottom: 5px; }
+#legend li:last-child { margin-bottom: 0; }
+#legend hr { border: none; border-top: 1px solid var(--color-border-light); margin: 8px 0; }
+.swatch { width: 14px; height: 14px; border-radius: 3px; margin-right: 8px; border: 1px solid rgba(0,0,0,0.2); flex-shrink: 0; }
+.interphase-flow-legend {
+    width: 14px; height: 14px; border-radius: 3px; margin-right: 8px;
+    border: 1px solid rgba(0,0,0,0.2); background-color: var(--color-danger);
+    animation: interphase-pulse 0.8s ease-in-out infinite;
+}
+.swatch-switch {
+    width: 18px; height: 11px; border-radius: 2px; margin-right: 8px;
+    border: 2px solid; flex-shrink: 0;
+}
+.swatch-switch.magenta { border-color: var(--color-chave-principal); }
+.swatch-switch.yellow { border-color: var(--color-chave-manobra); }
+.swatch-switch.delta { border-color: var(--color-chave-delta); }
+.swatch-switch.wye { border-color: var(--color-chave-wye); }

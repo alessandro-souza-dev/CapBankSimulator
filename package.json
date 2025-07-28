@@ -1,0 +1,42 @@
+{
+  "name": "capbanksimulator",
+  "version": "24.07.2025",
+  "description": "Simulador e Visualizador Interativo de Diagrama Unifilar para Banco de Capacitores Trifásico",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "diagrama",
+    "unifilar",
+    "capacitores",
+    "eletrico"
+  ],
+  "author": "Alessandro Souza",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^29.1.5",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.alessandrosouza.capbanksimulator",
+    "productName": "CapBankSimulator",
+    "files": [
+      "app/**/*",
+      "main.js",
+      "preload.js"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "app/assets/logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "installer.nsh"
+    }
+  }
+}
