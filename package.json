@@ -1,6 +1,6 @@
 {
   "name": "diagrama-unifilar-capacitores",
-  "version": "2025.01.28",
+  "version": "2025.07.28",
   "description": "Diagrama Unifilar Interativo - Banco de Capacitores",
   "main": "main.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "build-mac": "electron-builder --mac",
     "dist": "electron-builder --publish=never",
     "pack": "electron-builder --dir",
-    "package-win": "electron-packager . DiagramaUnifilar --platform=win32 --arch=x64 --out=executavel --overwrite"
+    "package-win": "electron-packager . DiagramaUnifilar --platform=win32 --arch=x64 --out=executavel --overwrite --asar",
+    "build-secure": "electron-builder --win --publish=never"
   },
   "keywords": [
     "electron",
@@ -45,6 +46,11 @@
     "win": {
       "target": "portable",
       "icon": "assets/logo.png"
-    }
+    },
+    "asar": true,
+    "asarUnpack": [
+      "assets/**/*"
+    ],
+    "compression": "maximum"
   }
 }
